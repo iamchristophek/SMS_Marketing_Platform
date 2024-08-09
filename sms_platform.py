@@ -57,6 +57,20 @@ class SMSMarketingPlatform:
             VALUES (?, ?, ?, ?)
         ''', (client_id, name, message, scheduled_date))
         self.conn.commit()
+        return self.cursor.lastrowid
+    
+    
+    def get_campaigns(self, user_id):
+        self.cursor.execute('''
+            SELECT id, name, message, scheduled_date FROM campaigns
+            WHERE user_id = ? ORDER BY scheduled_date DESC
+        ''', (user_id,))
+        return self.cursor.fetchall()
+    
+    def delete_campaign(self, campaign_id, user_id):
+        self.cursor.execute('DELETE FROM campaigns WHERE id = ? AND user_id = ?', (campaign_id, user_id))
+        self.conn.commit()
+        return self.cursor.rowcount > 0
         
 
     def send_sms(self, campaign_id, recipient):
@@ -93,5 +107,8 @@ class SMSMarketingPlatform:
         return None
 
     # Ajoutez ici les méthodes pour la gestion des abonnés et des opt-outs
+    def get_user_info(self, user_id):
+        self.cursor.execute('SELECT username FROM users WHERE id = ?', (user_id,))
+        return self.cursor.fetchone()
     
     

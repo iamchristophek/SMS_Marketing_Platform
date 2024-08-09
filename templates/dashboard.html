@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Tableau de bord</h1>
+<p>Bienvenue, {{ user_info[0] }}!</p>
+<h2>Vos campagnes SMS</h2>
+<a href="{{ url_for('create_campaign') }}">Créer une nouvelle campagne</a>
+<ul>
+{% for campaign in campaigns %}
+    <li>
+        {{ campaign[1] }} - {{ campaign[2] }} ({{ campaign[3] }})
+        <a href="{{ url_for('delete_campaign', campaign_id=campaign[0]) }}">Supprimer</a>
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}

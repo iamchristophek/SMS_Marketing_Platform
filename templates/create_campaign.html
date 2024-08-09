@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Créer une nouvelle campagne</h1>
+<form method="post">
+    <label for="name">Nom de la campagne:</label>
+    <input type="text" id="name" name="name" required><br>
+    <label for="message">Message:</label>
+    <textarea id="message" name="message" required></textarea><br>
+    <label for="scheduled_date">Date prévue:</label>
+    <input type="datetime-local" id="scheduled_date" name="scheduled_date" required><br>
+    <input type="submit" value="Créer la campagne">
+</form>
+{% endblock %}
