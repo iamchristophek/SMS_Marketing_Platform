@@ -1,15 +1,42 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Tableau de bord</h1>
-<p>Bienvenue, {{ user_info[0] }}!</p>
-<h2>Vos campagnes SMS</h2>
-<a href="{{ url_for('create_campaign') }}">Créer une nouvelle campagne</a>
-<ul>
-{% for campaign in campaigns %}
-    <li>
-        {{ campaign[1] }} - {{ campaign[2] }} ({{ campaign[3] }})
-        <a href="{{ url_for('delete_campaign', campaign_id=campaign[0]) }}">Supprimer</a>
-    </li>
-{% endfor %}
-</ul>
+<p>Bienvenue, {{ user_info[0] if user_info else 'Utilisateur'}}!</p>
+
+<div class="row">
+    <div class="col-md-6">
+        <h2>Vos campagnes récentes</h2>
+        <ul class="list-group">
+            {% for campaign in campaigns %}
+                <li class="list-group-item">
+                    {{ campaign[1] }} - Prévu le: {{ campaign[3] }}
+                    <a href="{{ url_for('view_campaign', campaign_id=campaign[0]) }}" class="btn btn-sm btn-info float-right">Voir</a>
+                    <a href="{{ url_for('delete_campaign', campaign_id=campaign[0]) }}" class="btn btn-sm btn-danger float-right mr-2">Supprimer</a>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('create_campaign') }}" class="btn btn-primary mt-3">Créer une nouvelle campagne</a>
+    </div>
+    <div class="col-md-6">
+        <h2>Statistiques globales</h2>
+        <p>Nombre total de campagnes : {{ total_campaigns }}</p>
+        <p>Messages envoyés ce mois : {{ monthly_messages }}</p>
+        <p>Taux d'ouverture moyen : {{ average_open_rate }}%</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h2>Vos contacts</h2>
+        <a href="{{ url_for('import_contacts') }}" class="btn btn-secondary mb-3">Importer des contacts</a>
+        <ul class="list-group">
+        {% for contact in contacts %}
+            <li class="list-group-item">
+                {{ contact[1] }} - {{ contact[2] }} ({{ contact[3] }})
+                <a href="{{ url_for('delete_contact', contact_id=contact[0]) }}" class="btn btn-sm btn-danger float-right">Supprimer</a>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
 {% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Détails de la campagne</h1>
+{% if campaign %}
+    <h2>{{ campaign[1] }}</h2>
+    <p><strong>Message:</strong> {{ campaign[2] }}</p>
+    <p><strong>Date prévue:</strong> {{ campaign[3] }}</p>
+    <p><strong>Créée le:</strong> {{ campaign[4] }}</p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Retour au tableau de bord</a>
+{% else %}
+    <p>Campagne non trouvée.</p>
+{% endif %}
+{% endblock %}

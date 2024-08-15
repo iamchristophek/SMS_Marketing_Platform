@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1>Bienvenue sur la Plateforme de Marketing SMS</h1>
+    <p>Envoyez des campagnes SMS efficaces et suivez vos résultats en temps réel.</p>
+    {% if 'user_id' not in session %}
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">S'inscrire</a>
+        <a href="{{ url_for('login') }}" class="btn btn-secondary btn-lg">Se connecter</a>
+    {% else %}
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">Accéder au tableau de bord</a>
+    {% endif %}
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Campagnes personnalisées</h2>
+        <p>Créez des campagnes SMS sur mesure pour vos clients.</p>
+    </div>
+    <div class="col-md-4">
+        <h2>Analyse en temps réel</h2>
+        <p>Suivez les performances de vos campagnes instantanément.</p>
+    </div>
+    <div class="col-md-4">
+        <h2>Gestion des contacts</h2>
+        <p>Organisez et segmentez facilement votre liste de contacts.</p>
+    </div>
+</div>
+{% endblock %}
