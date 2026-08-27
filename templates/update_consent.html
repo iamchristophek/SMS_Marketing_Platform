@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Gestion du Consentement</h1>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Mettre à jour le Consentement</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label>Contact :</label>
+                            <div class="contact-info">
+                                <strong>{{ contact.name }}</strong><br>
+                                <span class="text-muted">{{ contact.phone }}</span>
+                                {% if contact.email %}
+                                    <br><span class="text-muted">{{ contact.email }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Statut actuel du consentement :</label>
+                            <div class="current-status">
+                                {% if contact.consent_given %}
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check"></i> Consentement donné
+                                    </span>
+                                    <small class="text-muted d-block">
+                                        Date : {{ contact.consent_date[:10] if contact.consent_date else 'Non spécifiée' }}
+                                    </small>
+                                {% else %}
+                                    <span class="badge badge-danger">
+                                        <i class="fas fa-times"></i> Aucun consentement
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="consent_given" name="consent_given" 
+                                       {% if contact.consent_given %}checked{% endif %}>
+                                <label class="form-check-label" for="consent_given">
+                                    <strong>Le contact a donné son consentement pour recevoir des SMS marketing</strong>
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Le consentement est obligatoire pour envoyer des SMS promotionnels en Côte d'Ivoire.
+                                Sans consentement, seuls les SMS transactionnels sont autorisés.
+                            </small>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h5>Informations importantes :</h5>
+                            <ul class="mb-0">
+                                <li>Le consentement doit être <strong>explicite</strong> et <strong>libre</strong></li>
+                                <li>Le contact peut se désabonner à tout moment en répondant "STOP"</li>
+                                <li>Le consentement est <strong>obligatoire</strong> pour les messages promotionnels</li>
+                                <li>Les SMS transactionnels (confirmations, factures) ne nécessitent pas de consentement</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fas fa-save"></i> Mettre à jour
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="{{ url_for('contacts') }}" class="btn btn-secondary btn-block">
+                                        <i class="fas fa-arrow-left"></i> Retour aux contacts
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Types de Messages</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6><span class="badge badge-warning">Promotionnel</span> - Consentement requis</h6>
+                        <ul class="small text-muted">
+                            <li>Publicités et promotions</li>
+                            <li>Offres spéciales</li>
+                            <li>Nouveautés produits</li>
+                        </ul>
+                    </div>
+                    <div class="mb-3">
+                        <h6><span class="badge badge-info">Transactionnel</span> - Pas de consentement requis</h6>
+                        <ul class="small text-muted">
+                            <li>Confirmations de commande</li>
+                            <li>Factures et reçus</li>
+                            <li>Rappels de paiement</li>
+                        </ul>
+                    </div>
+                    <div class="mb-3">
+                        <h6><span class="badge badge-success">Informatif</span> - Consentement requis</h6>
+                        <ul class="small text-muted">
+                            <li>Notifications importantes</li>
+                            <li>Rappels de rendez-vous</li>
+                            <li>Informations de service</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Réglementations en Côte d'Ivoire</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-gavel text-primary"></i> <strong>Loi sur la protection des données</strong></li>
+                        <li><i class="fas fa-shield-alt text-success"></i> <strong>Consentement explicite obligatoire</strong></li>
+                        <li><i class="fas fa-ban text-danger"></i> <strong>Droit de désabonnement (STOP)</strong></li>
+                        <li><i class="fas fa-clock text-warning"></i> <strong>Respect des heures d'envoi</strong></li>
+                        <li><i class="fas fa-chart-line text-info"></i> <strong>Limite de 10 SMS/jour par destinataire</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.contact-info {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid #007bff;
+}
+
+.current-status {
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.badge {
+    font-size: 0.9em;
+    padding: 8px 12px;
+}
+
+.badge i {
+    margin-right: 5px;
+}
+</style>
+{% endblock %}

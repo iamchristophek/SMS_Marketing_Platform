@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Créer un Template de Message</h1>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Nouveau Template</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="name">Nom du template *</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   placeholder="Ex: Promotion Noël 2024" required>
+                            <small class="form-text text-muted">
+                                Choisissez un nom descriptif pour identifier facilement ce template
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="template_type">Type de template *</label>
+                            <select class="form-control" id="template_type" name="template_type" required>
+                                <option value="">Sélectionnez un type</option>
+                                {% for type_key, type_info in template_types.items() %}
+                                <option value="{{ type_key }}">{{ type_info.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                Le type détermine les règles de consentement et d'utilisation
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="content">Contenu du message *</label>
+                            <textarea class="form-control" id="content" name="content" rows="4" 
+                                      placeholder="Tapez votre message ici..." required maxlength="160"></textarea>
+                            <div class="d-flex justify-content-between">
+                                <small class="form-text text-muted">
+                                    Maximum 160 caractères pour un SMS standard
+                                </small>
+                                <small class="text-muted">
+                                    <span id="charCount">0</span>/160 caractères
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="alert alert-info">
+                                <h5>Conseils pour un bon template :</h5>
+                                <ul class="mb-0">
+                                    <li><strong>Clarté :</strong> Message simple et compréhensible</li>
+                                    <li><strong>Concision :</strong> Maximum 160 caractères</li>
+                                    <li><strong>Action :</strong> Inclure un appel à l'action clair</li>
+                                    <li><strong>Légalité :</strong> Respecter les réglementations ivoiriennes</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>Aperçu du message</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="sms-preview">
+                                        <div class="sms-bubble">
+                                            <div class="sms-content" id="previewContent">Votre message apparaîtra ici...</div>
+                                            <div class="sms-time">Maintenant</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fas fa-save"></i> Créer le template
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="{{ url_for('templates') }}" class="btn btn-secondary btn-block">
+                                        <i class="fas fa-times"></i> Annuler
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Exemples de Templates</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Promotionnel :</strong>
+                        <div class="template-example">
+                            "🎉 Nouvelle promotion ! Réduction de 20% sur tous nos produits. Valable jusqu'au 31/12/2024. Code: PROMO20"
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Transactionnel :</strong>
+                        <div class="template-example">
+                            "Votre commande #12345 a été confirmée. Livraison prévue le 15/01/2024. Merci pour votre confiance !"
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Informatif :</strong>
+                        <div class="template-example">
+                            "Rappel: Votre rendez-vous médical est prévu demain à 14h00. Dr. Kouassi - Clinique du Plateau"
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Réglementations SMS en Côte d'Ivoire</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Consentement obligatoire pour les messages promotionnels</li>
+                        <li><i class="fas fa-check text-success"></i> Possibilité de désabonnement (STOP)</li>
+                        <li><i class="fas fa-check text-success"></i> Respect des heures d'envoi</li>
+                        <li><i class="fas fa-check text-success"></i> Limite de 10 SMS par jour par destinataire</li>
+                        <li><i class="fas fa-check text-success"></i> Identification de l'expéditeur</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.template-example {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+.sms-preview {
+    display: flex;
+    justify-content: flex-end;
+    margin: 10px 0;
+}
+
+.sms-bubble {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 18px;
+    max-width: 80%;
+    position: relative;
+}
+
+.sms-content {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.sms-time {
+    font-size: 11px;
+    opacity: 0.7;
+    text-align: right;
+    margin-top: 5px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contentTextarea = document.getElementById('content');
+    const charCount = document.getElementById('charCount');
+    const previewContent = document.getElementById('previewContent');
+    
+    function updateCharCount() {
+        const length = contentTextarea.value.length;
+        charCount.textContent = length;
+        
+        if (length > 160) {
+            charCount.classList.add('text-danger');
+        } else if (length > 140) {
+            charCount.classList.add('text-warning');
+        } else {
+            charCount.classList.remove('text-danger', 'text-warning');
+        }
+    }
+    
+    function updatePreview() {
+        const content = contentTextarea.value || 'Votre message apparaîtra ici...';
+        previewContent.textContent = content;
+    }
+    
+    contentTextarea.addEventListener('input', function() {
+        updateCharCount();
+        updatePreview();
+    });
+    
+    // Initialisation
+    updateCharCount();
+    updatePreview();
+});
+</script>
+{% endblock %}

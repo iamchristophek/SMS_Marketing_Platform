@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Gestion des Contacts</h1>
+    
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <a href="{{ url_for('add_contact') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Ajouter un Contact
+            </a>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="{{ url_for('analytics') }}" class="btn btn-info">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Mes Contacts</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Téléphone</th>
+                                    <th>Email</th>
+                                    <th>Groupe</th>
+                                    <th>Opérateur</th>
+                                    <th>Consentement</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contact in contacts %}
+                                <tr>
+                                    <td>{{ contact[1] }}</td>
+                                    <td>{{ contact[2] }}</td>
+                                    <td>{{ contact[3] or '-' }}</td>
+                                    <td>{{ contact[4] or '-' }}</td>
+                                    <td>
+                                        {% if contact[5] == 'orange' %}
+                                            <span class="badge badge-warning">Orange</span>
+                                        {% elif contact[5] == 'mtn' %}
+                                            <span class="badge badge-success">MTN</span>
+                                        {% elif contact[5] == 'moov' %}
+                                            <span class="badge badge-info">Moov</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">Inconnu</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if contact[6] %}
+                                            <span class="badge badge-success">Oui</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Non</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            {% if not contact[6] %}
+                                            <a href="{{ url_for('update_consent', contact_id=contact[0]) }}" 
+                                               class="btn btn-sm btn-success">
+                                                Consentement
+                                            </a>
+                                            {% endif %}
+                                            <a href="{{ url_for('opt_out', phone_number=contact[2]) }}" 
+                                               class="btn btn-sm btn-danger"
+                                               onclick="return confirm('Désabonner ce contact ?')">
+                                                Désabonner
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Statistiques</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Total contacts :</strong> {{ contacts|length }}</p>
+                    <p><strong>Avec consentement :</strong> {{ contacts|selectattr('6')|list|length }}</p>
+                    <p><strong>Sans consentement :</strong> {{ contacts|rejectattr('6')|list|length }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Répartition par Opérateur</h3>
+                </div>
+                <div class="card-body">
+                    {% set orange_count = contacts|selectattr('5', 'equalto', 'orange')|list|length %}
+                    {% set mtn_count = contacts|selectattr('5', 'equalto', 'mtn')|list|length %}
+                    {% set moov_count = contacts|selectattr('5', 'equalto', 'moov')|list|length %}
+                    
+                    <p><span class="badge badge-warning">Orange</span> {{ orange_count }}</p>
+                    <p><span class="badge badge-success">MTN</span> {{ mtn_count }}</p>
+                    <p><span class="badge badge-info">Moov</span> {{ moov_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

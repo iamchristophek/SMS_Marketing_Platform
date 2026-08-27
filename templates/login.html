@@ -1,30 +1,90 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Login</title>
-</head>
-<body>
-    <h1>Login</h1>
-    
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-    
-    <form method="post">
-        {{ form.hidden_tag() }}
-        <div>
-            {{ form.username.label }}
-            {{ form.username() }}
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-header text-center">
+                    <h3><i class="fas fa-sign-in-alt"></i> Connexion</h3>
+                    <p class="text-muted">Accédez à votre compte SMS Marketing</p>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="username">Nom d'utilisateur</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                </div>
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       placeholder="Votre nom d'utilisateur" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">Mot de passe</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                </div>
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       placeholder="Votre mot de passe" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                            <label class="form-check-label" for="remember">
+                                Se souvenir de moi
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-sign-in-alt"></i> Se connecter
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center">
+                        <p class="text-muted">Pas encore de compte ?</p>
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-plus"></i> S'inscrire
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div>
-            {{ form.password.label }}
-            {{ form.password() }}
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-info-circle"></i> Informations de connexion</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Compte de démonstration</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Nom d'utilisateur :</strong> demo</li>
+                                <li><strong>Mot de passe :</strong> demo123</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Fonctionnalités</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Gestion des campagnes SMS</li>
+                                <li><i class="fas fa-check text-success"></i> Gestion des contacts</li>
+                                <li><i class="fas fa-check text-success"></i> Analytics en temps réel</li>
+                                <li><i class="fas fa-check text-success"></i> Support Orange, MTN, Moov</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        {{ form.submit() }}
-    </form>
-</body>
-</html>
+    </div>
+</div>
+{% endblock %}

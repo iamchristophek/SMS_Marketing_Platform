@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Mon Solde</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Solde Actuel</h3>
+                </div>
+                <div class="card-body">
+                    <h2 class="text-success">{{ "%.2f"|format(balance) }} {{ currency }}</h2>
+                    <a href="{{ url_for('add_balance') }}" class="btn btn-primary">Recharger le compte</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Informations</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Devise :</strong> Franc CFA (FCFA)</p>
+                    <p><strong>Coût SMS :</strong></p>
+                    <ul>
+                        <li>Orange : 25 FCFA</li>
+                        <li>MTN : 30 FCFA</li>
+                        <li>Moov : 20 FCFA</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <h3>Historique des Transactions</h3>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Montant</th>
+                            <th>Description</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td>
+                                {% if transaction[0] == 'BALANCE_ADDED' %}
+                                    <span class="badge badge-success">Crédit</span>
+                                {% elif transaction[0] == 'SMS_SENT' %}
+                                    <span class="badge badge-info">SMS</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">{{ transaction[0] }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if transaction[0] == 'BALANCE_ADDED' %}
+                                    <span class="text-success">+{{ "%.2f"|format(transaction[1]) }} {{ currency }}</span>
+                                {% else %}
+                                    <span class="text-danger">-{{ "%.2f"|format(transaction[1]) }} {{ currency }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ transaction[2] }}</td>
+                            <td>{{ transaction[3][:19] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,41 +1,131 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>SMS Marketing Platform</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Marketing Platform - Côte d'Ivoire</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <div id="branding">
-                <h1><span class="highlight">SMS</span> Marketing Platform</h1>
-            </div>!
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-sms"></i> SMS Marketing CI
+            </a>
             
-            <nav>
-                <ul>
-                    <li class="current"><a href="{{ url_for('home') }}">Home</a></li>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
                     {% if 'user_id' in session %}
-                        <li><a href="{{ url_for('create_campaign') }}">New Campaign</a></li>
-                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                    {% else %}
-                        <li><a href="{{ url_for('login') }}">Login</a></li>
-                        <li><a href="{{ url_for('register') }}">Register</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('campaigns_management') }}">
+                                <i class="fas fa-bullhorn"></i> Campagnes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('create_campaign') }}">
+                                <i class="fas fa-plus"></i> Nouvelle Campagne
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('contacts') }}">
+                                <i class="fas fa-users"></i> Contacts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('balance') }}">
+                                <i class="fas fa-wallet"></i> Solde
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('analytics') }}">
+                                <i class="fas fa-chart-bar"></i> Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('templates') }}">
+                                <i class="fas fa-file-alt"></i> Templates
+                            </a>
+                        </li>
                     {% endif %}
                 </ul>
-            </nav>
+                
+                <ul class="navbar-nav">
+                    {% if 'user_id' in session %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                                <i class="fas fa-user"></i> Mon Compte
+                            </a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{{ url_for('change_password') }}">
+                                    <i class="fas fa-key"></i> Changer le mot de passe
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ url_for('logout') }}">
+                                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                                </a>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">
+                                <i class="fas fa-sign-in-alt"></i> Connexion
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">
+                                <i class="fas fa-user-plus"></i> Inscription
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
-    </header>
+    </nav>
 
-    <div class="container">
+    <main class="container mt-4">
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}
-              <div class="alert alert-{{ category }}">{{ message }}</div>
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert">
+                  <span>&times;</span>
+                </button>
+              </div>
             {% endfor %}
           {% endif %}
         {% endwith %}
         
         {% block content %}{% endblock %}
-    </div>
+    </main>
+    
+    <footer class="bg-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>SMS Marketing Platform - Côte d'Ivoire</h5>
+                    <p>Plateforme de marketing SMS adaptée au marché ivoirien</p>
+                </div>
+                <div class="col-md-6 text-right">
+                    <p><strong>Support :</strong> +225 XX XX XX XX</p>
+                    <p><strong>Email :</strong> support@smsmarketing.ci</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

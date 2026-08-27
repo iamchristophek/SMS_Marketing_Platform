@@ -1,13 +1,216 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Créer une nouvelle campagne</h1>
-<form method="post">
-    <label for="name">Nom de la campagne:</label>
-    <input type="text" id="name" name="name" required><br>
-    <label for="message">Message:</label>
-    <textarea id="message" name="message" required></textarea><br>
-    <label for="scheduled_date">Date prévue:</label>
-    <input type="datetime-local" id="scheduled_date" name="scheduled_date" required><br>
-    <input type="submit" value="Créer la campagne">
-</form>
+<div class="container">
+    <h1><i class="fas fa-bullhorn"></i> Créer une nouvelle campagne</h1>
+    <p class="lead">Créez et planifiez vos campagnes SMS pour la Côte d'Ivoire</p>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-edit"></i> Informations de la campagne</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="form-group">
+                            <label for="name">Nom de la campagne *</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   placeholder="Ex: Promotion Noël 2024" required>
+                            <small class="form-text text-muted">
+                                Choisissez un nom descriptif pour identifier votre campagne
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message">Message SMS *</label>
+                            <textarea class="form-control" id="message" name="message" rows="4" 
+                                      placeholder="Tapez votre message SMS ici..." required maxlength="160"></textarea>
+                            <div class="d-flex justify-content-between">
+                                <small class="form-text text-muted">
+                                    Maximum 160 caractères pour un SMS standard
+                                </small>
+                                <small class="text-muted">
+                                    <span id="charCount">0</span>/160 caractères
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="scheduled_date">Date et heure d'envoi *</label>
+                            <input type="datetime-local" class="form-control" id="scheduled_date" 
+                                   name="scheduled_date" required>
+                            <small class="form-text text-muted">
+                                La campagne sera envoyée à la date et heure spécifiées
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-info-circle"></i> Informations importantes :</h5>
+                                <ul class="mb-0">
+                                    <li>Le message sera envoyé uniquement aux contacts ayant donné leur consentement</li>
+                                    <li>Les coûts varient selon l'opérateur : Orange (25 FCFA), MTN (30 FCFA), Moov (20 FCFA)</li>
+                                    <li>Respectez les heures d'envoi recommandées (8h-18h)</li>
+                                    <li>Vérifiez votre solde avant l'envoi</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fas fa-save"></i> Créer la campagne
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-block">
+                                        <i class="fas fa-arrow-left"></i> Annuler
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-mobile-alt"></i> Aperçu du message</h3>
+                </div>
+                <div class="card-body">
+                    <div class="sms-preview">
+                        <div class="sms-bubble">
+                            <div class="sms-content" id="previewContent">Votre message apparaîtra ici...</div>
+                            <div class="sms-time">Maintenant</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3><i class="fas fa-chart-bar"></i> Estimation des coûts</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h6 class="text-warning">Orange</h6>
+                            <p class="small">25 FCFA</p>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-success">MTN</h6>
+                            <p class="small">30 FCFA</p>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-info">Moov</h6>
+                            <p class="small">20 FCFA</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <h5 class="text-primary" id="estimatedCost">0 FCFA</h5>
+                        <small class="text-muted">Coût estimé</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3><i class="fas fa-lightbulb"></i> Conseils</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success"></i> Message clair et concis</li>
+                        <li><i class="fas fa-check text-success"></i> Inclure un appel à l'action</li>
+                        <li><i class="fas fa-check text-success"></i> Respecter les réglementations</li>
+                        <li><i class="fas fa-check text-success"></i> Tester avant envoi</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.sms-preview {
+    display: flex;
+    justify-content: flex-end;
+    margin: 10px 0;
+}
+
+.sms-bubble {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 18px;
+    max-width: 80%;
+    position: relative;
+}
+
+.sms-content {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.sms-time {
+    font-size: 11px;
+    opacity: 0.7;
+    text-align: right;
+    margin-top: 5px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageTextarea = document.getElementById('message');
+    const charCount = document.getElementById('charCount');
+    const previewContent = document.getElementById('previewContent');
+    const estimatedCost = document.getElementById('estimatedCost');
+    
+    function updateCharCount() {
+        const length = messageTextarea.value.length;
+        charCount.textContent = length;
+        
+        if (length > 160) {
+            charCount.classList.add('text-danger');
+        } else if (length > 140) {
+            charCount.classList.add('text-warning');
+        } else {
+            charCount.classList.remove('text-danger', 'text-warning');
+        }
+    }
+    
+    function updatePreview() {
+        const content = messageTextarea.value || 'Votre message apparaîtra ici...';
+        previewContent.textContent = content;
+    }
+    
+    function updateEstimatedCost() {
+        const length = messageTextarea.value.length;
+        if (length > 0) {
+            // Estimation basée sur la longueur moyenne des contacts
+            const estimatedContacts = 100; // Estimation par défaut
+            const avgCost = 25; // Coût moyen en FCFA
+            const cost = estimatedContacts * avgCost;
+            estimatedCost.textContent = cost.toLocaleString() + ' FCFA';
+        } else {
+            estimatedCost.textContent = '0 FCFA';
+        }
+    }
+    
+    messageTextarea.addEventListener('input', function() {
+        updateCharCount();
+        updatePreview();
+        updateEstimatedCost();
+    });
+    
+    // Initialisation
+    updateCharCount();
+    updatePreview();
+    updateEstimatedCost();
+});
+</script>
 {% endblock %}

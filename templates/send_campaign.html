@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1><i class="fas fa-paper-plane"></i> Envoyer une Campagne</h1>
+    <p class="lead">Confirmez et envoyez votre campagne SMS</p>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-bullhorn"></i> Détails de la campagne</h3>
+                </div>
+                <div class="card-body">
+                    {% if campaign %}
+                        <h4>{{ campaign[1] }}</h4>
+                        <p class="text-muted">Créée le {{ campaign[4][:10] if campaign[4] else 'Date inconnue' }}</p>
+                        
+                        <div class="mb-3">
+                            <h5>Message :</h5>
+                            <div class="alert alert-info">
+                                {{ campaign[2] }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h5>Date prévue :</h5>
+                            <p class="lead">{{ campaign[3] }}</p>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Attention :</h5>
+                            <ul class="mb-0">
+                                <li>Cette action enverra le SMS à tous vos contacts ayant donné leur consentement</li>
+                                <li>Les coûts seront débités de votre solde</li>
+                                <li>L'envoi est irréversible</li>
+                                <li>Vérifiez votre solde avant de continuer</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-success btn-block" onclick="confirmSend()">
+                                    <i class="fas fa-paper-plane"></i> Confirmer l'envoi
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{{ url_for('campaigns_management') }}" class="btn btn-secondary btn-block">
+                                    <i class="fas fa-arrow-left"></i> Annuler
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Campagne non trouvée.
+                        </div>
+                        <a href="{{ url_for('campaigns_management') }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i> Retour aux campagnes
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-wallet"></i> Votre solde</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <h4 class="text-success">Solde disponible</h4>
+                        <p class="lead">Consultez votre solde avant l'envoi</p>
+                        <a href="{{ url_for('balance') }}" class="btn btn-primary">
+                            <i class="fas fa-coins"></i> Voir le solde
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3><i class="fas fa-chart-bar"></i> Estimation des coûts</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h6 class="text-warning">Orange</h6>
+                            <p class="small">25 FCFA</p>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-success">MTN</h6>
+                            <p class="small">30 FCFA</p>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-info">Moov</h6>
+                            <p class="small">20 FCFA</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <h5 class="text-primary" id="estimatedCost">0 FCFA</h5>
+                        <small class="text-muted">Coût estimé</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3><i class="fas fa-users"></i> Contacts ciblés</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <h4 class="text-info">Contacts avec consentement</h4>
+                        <p class="text-muted">Seuls les contacts ayant donné leur consentement recevront le SMS</p>
+                        <a href="{{ url_for('contacts') }}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-users"></i> Voir les contacts
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmSend() {
+    if (confirm('Êtes-vous sûr de vouloir envoyer cette campagne ? Cette action est irréversible.')) {
+        // Rediriger vers la route de confirmation d'envoi
+        window.location.href = "{{ url_for('confirm_send_campaign', campaign_id=campaign[0]) }}";
+    }
+}
+
+// Calculer le coût estimé
+document.addEventListener('DOMContentLoaded', function() {
+    const messageLength = {{ campaign[2]|length if campaign else 0 }};
+    const estimatedContacts = 100; // Estimation par défaut
+    const avgCost = 25; // Coût moyen en FCFA
+    const cost = estimatedContacts * avgCost;
+    
+    document.getElementById('estimatedCost').textContent = cost.toLocaleString() + ' FCFA';
+});
+</script>
+{% endblock %}

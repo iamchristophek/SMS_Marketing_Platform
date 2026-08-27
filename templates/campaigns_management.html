@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1><i class="fas fa-bullhorn"></i> Gestion des Campagnes</h1>
+    <p class="lead">Gérez vos campagnes SMS pour la Côte d'Ivoire</p>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <a href="{{ url_for('create_campaign') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouvelle campagne
+            </a>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-list"></i> Toutes vos campagnes</h3>
+                </div>
+                <div class="card-body">
+                    {% if campaigns %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Message</th>
+                                        <th>Date prévue</th>
+                                        <th>Statut</th>
+                                        <th>Coût estimé</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for campaign in campaigns %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ campaign[1] }}</strong>
+                                            <br><small class="text-muted">Créée le {{ campaign[4][:10] if campaign[4] else 'Date inconnue' }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="message-preview">
+                                                {{ campaign[2][:50] }}{% if campaign[2]|length > 50 %}...{% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-info">{{ campaign[3] }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-warning">Programmée</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-success">{{ (campaign[2]|length * 25) }} FCFA</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('view_campaign', campaign_id=campaign[0]) }}" 
+                                                   class="btn btn-sm btn-info" title="Voir les détails">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('send_campaign', campaign_id=campaign[0]) }}" 
+                                                   class="btn btn-sm btn-success" title="Envoyer maintenant">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </a>
+                                                <a href="{{ url_for('delete_campaign', campaign_id=campaign[0]) }}" 
+                                                   class="btn btn-sm btn-danger" title="Supprimer"
+                                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette campagne ?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+                            <h4>Aucune campagne créée</h4>
+                            <p class="text-muted">Créez votre première campagne SMS pour commencer.</p>
+                            <a href="{{ url_for('create_campaign') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Créer une campagne
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-chart-pie"></i> Statistiques</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ campaigns|length }}</h4>
+                            <small class="text-muted">Total campagnes</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ monthly_messages }}</h4>
+                            <small class="text-muted">Messages/mois</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-mobile-alt"></i> Opérateurs</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h6 class="text-warning">Orange</h6>
+                            <p class="small">25 FCFA</p>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-success">MTN</h6>
+                            <p class="small">30 FCFA</p>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-info">Moov</h6>
+                            <p class="small">20 FCFA</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-lightbulb"></i> Conseils</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success"></i> Planifiez vos envois</li>
+                        <li><i class="fas fa-check text-success"></i> Respectez les heures d'envoi</li>
+                        <li><i class="fas fa-check text-success"></i> Vérifiez votre solde</li>
+                        <li><i class="fas fa-check text-success"></i> Testez avant envoi</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.message-preview {
+    font-family: monospace;
+    background-color: #f8f9fa;
+    padding: 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    max-width: 200px;
+}
+
+.btn-group .btn {
+    margin-right: 2px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+</style>
+{% endblock %}

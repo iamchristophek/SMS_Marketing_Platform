@@ -1,13 +1,89 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Détails de la campagne</h1>
-{% if campaign %}
-    <h2>{{ campaign[1] }}</h2>
-    <p><strong>Message:</strong> {{ campaign[2] }}</p>
-    <p><strong>Date prévue:</strong> {{ campaign[3] }}</p>
-    <p><strong>Créée le:</strong> {{ campaign[4] }}</p>
-    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Retour au tableau de bord</a>
-{% else %}
-    <p>Campagne non trouvée.</p>
-{% endif %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-bullhorn"></i> Détails de la Campagne</h3>
+                </div>
+                <div class="card-body">
+                    {% if campaign %}
+                        <h4>{{ campaign[1] }}</h4>
+                        <p class="text-muted">Créée le {{ campaign[4][:10] if campaign[4] else 'Date inconnue' }}</p>
+                        
+                        <div class="mb-3">
+                            <h5>Message :</h5>
+                            <div class="alert alert-info">
+                                {{ campaign[2] }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h5>Date prévue :</h5>
+                            <p class="lead">{{ campaign[3] }}</p>
+                        </div>
+                        
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('send_campaign', campaign_id=campaign[0]) }}" class="btn btn-success">
+                                <i class="fas fa-paper-plane"></i> Envoyer maintenant
+                            </a>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+                            </a>
+                            <a href="{{ url_for('delete_campaign', campaign_id=campaign[0]) }}" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Campagne non trouvée.
+                        </div>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            {% if analytics %}
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-chart-bar"></i> Statistiques</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ analytics.total_sent }}</h4>
+                            <small class="text-muted">Envoyés</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ analytics.delivered }}</h4>
+                            <small class="text-muted">Livrés</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-info">{{ analytics.delivery_rate }}%</h4>
+                            <small class="text-muted">Taux de livraison</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-warning">{{ analytics.cost_per_message }} FCFA</h4>
+                            <small class="text-muted">Coût/SMS</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <h5 class="text-success">{{ analytics.total_cost }} FCFA</h5>
+                        <small class="text-muted">Coût total</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

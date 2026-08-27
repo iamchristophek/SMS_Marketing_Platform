@@ -1,42 +1,160 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Tableau de bord</h1>
-<p>Bienvenue, {{ user_info[0] if user_info else 'Utilisateur'}}!</p>
+<div class="container">
+    <h1>Tableau de bord</h1>
+    <p class="lead">Bienvenue, {{ user_info[0] if user_info else 'Utilisateur'}}!</p>
 
-<div class="row">
-    <div class="col-md-6">
-        <h2>Vos campagnes récentes</h2>
-        <ul class="list-group">
-            {% for campaign in campaigns %}
-                <li class="list-group-item">
-                    {{ campaign[1] }} - Prévu le: {{ campaign[3] }}
-                    <a href="{{ url_for('view_campaign', campaign_id=campaign[0]) }}" class="btn btn-sm btn-info float-right">Voir</a>
-                    <a href="{{ url_for('delete_campaign', campaign_id=campaign[0]) }}" class="btn btn-sm btn-danger float-right mr-2">Supprimer</a>
-                </li>
-            {% endfor %}
-        </ul>
-        <a href="{{ url_for('create_campaign') }}" class="btn btn-primary mt-3">Créer une nouvelle campagne</a>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-bullhorn"></i> Vos campagnes récentes</h3>
+                </div>
+                <div class="card-body">
+                    {% if campaigns %}
+                        <div class="list-group">
+                            {% for campaign in campaigns %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ campaign[1] }}</h5>
+                                        <small>{{ campaign[3] }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ campaign[2][:50] }}{% if campaign[2]|length > 50 %}...{% endif %}</p>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('view_campaign', campaign_id=campaign[0]) }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> Voir
+                                        </a>
+                                        <a href="{{ url_for('send_campaign', campaign_id=campaign[0]) }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-paper-plane"></i> Envoyer
+                                        </a>
+                                        <a href="{{ url_for('delete_campaign', campaign_id=campaign[0]) }}" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Aucune campagne créée</p>
+                        </div>
+                    {% endif %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('create_campaign') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Créer une nouvelle campagne
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-chart-bar"></i> Statistiques globales</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="border-right">
+                                <h4 class="text-primary">{{ total_campaigns }}</h4>
+                                <small class="text-muted">Campagnes</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-right">
+                                <h4 class="text-success">{{ monthly_messages }}</h4>
+                                <small class="text-muted">Messages/mois</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-info">{{ "%.1f"|format(average_open_rate) }}%</h4>
+                            <small class="text-muted">Taux d'ouverture</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-6">
-        <h2>Statistiques globales</h2>
-        <p>Nombre total de campagnes : {{ total_campaigns }}</p>
-        <p>Messages envoyés ce mois : {{ monthly_messages }}</p>
-        <p>Taux d'ouverture moyen : {{ average_open_rate }}%</p>
-    </div>
-</div>
 
-<div class="row mt-4">
-    <div class="col-md-6">
-        <h2>Vos contacts</h2>
-        <a href="{{ url_for('import_contacts') }}" class="btn btn-secondary mb-3">Importer des contacts</a>
-        <ul class="list-group">
-        {% for contact in contacts %}
-            <li class="list-group-item">
-                {{ contact[1] }} - {{ contact[2] }} ({{ contact[3] }})
-                <a href="{{ url_for('delete_contact', contact_id=contact[0]) }}" class="btn btn-sm btn-danger float-right">Supprimer</a>
-            </li>
-        {% endfor %}
-        </ul>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-users"></i> Vos contacts</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <a href="{{ url_for('add_contact') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Ajouter un contact
+                        </a>
+                        <a href="{{ url_for('contacts') }}" class="btn btn-secondary">
+                            <i class="fas fa-list"></i> Voir tous
+                        </a>
+                    </div>
+                    <p class="text-muted">Gérez vos contacts et leur consentement pour les campagnes SMS.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-wallet"></i> Votre solde</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <h4 class="text-success">Solde disponible</h4>
+                        <p class="lead">Consultez votre solde et rechargez votre compte</p>
+                        <a href="{{ url_for('balance') }}" class="btn btn-primary">
+                            <i class="fas fa-coins"></i> Gérer le solde
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-2x text-primary mb-3"></i>
+                    <h5>Analytics</h5>
+                    <p class="text-muted">Analysez vos performances</p>
+                    <a href="{{ url_for('analytics') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-chart-bar"></i> Voir les analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-alt fa-2x text-info mb-3"></i>
+                    <h5>Templates</h5>
+                    <p class="text-muted">Gérez vos modèles de messages</p>
+                    <a href="{{ url_for('templates') }}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-file-alt"></i> Voir les templates
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-cog fa-2x text-warning mb-3"></i>
+                    <h5>Paramètres</h5>
+                    <p class="text-muted">Configurez votre compte</p>
+                    <a href="{{ url_for('change_password') }}" class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-key"></i> Changer le mot de passe
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

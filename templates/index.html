@@ -1,29 +1,139 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="jumbotron">
-    <h1>Bienvenue sur la Plateforme de Marketing SMS</h1>
-    <p>Envoyez des campagnes SMS efficaces et suivez vos résultats en temps réel.</p>
-    {% if 'user_id' not in session %}
-        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">S'inscrire</a>
-        <a href="{{ url_for('login') }}" class="btn btn-secondary btn-lg">Se connecter</a>
-    {% else %}
-        <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">Accéder au tableau de bord</a>
-    {% endif %}
+<div class="jumbotron bg-primary text-white">
+    <div class="container">
+        <h1 class="display-4">🇨🇮 SMS Marketing Platform - Côte d'Ivoire</h1>
+        <p class="lead">Plateforme de marketing SMS adaptée au marché ivoirien. Support Orange, MTN et Moov.</p>
+        {% if 'user_id' not in session %}
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg mr-3">
+                <i class="fas fa-user-plus"></i> S'inscrire
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+            </a>
+        {% else %}
+            <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-tachometer-alt"></i> Accéder au tableau de bord
+            </a>
+        {% endif %}
+    </div>
 </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Campagnes personnalisées</h2>
-        <p>Créez des campagnes SMS sur mesure pour vos clients.</p>
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-bullhorn fa-3x text-primary mb-3"></i>
+                    <h3>Campagnes Personnalisées</h3>
+                    <p>Créez des campagnes SMS sur mesure pour vos clients en Côte d'Ivoire. Support des 3 opérateurs principaux.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                    <h3>Analytics en Temps Réel</h3>
+                    <p>Suivez les performances de vos campagnes instantanément avec des métriques adaptées au marché ivoirien.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x text-info mb-3"></i>
+                    <h3>Gestion des Contacts</h3>
+                    <p>Organisez et segmentez facilement votre liste de contacts avec gestion du consentement obligatoire.</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-4">
-        <h2>Analyse en temps réel</h2>
-        <p>Suivez les performances de vos campagnes instantanément.</p>
+    
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">Spécificités du Marché Ivoirien</h2>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center">
+                <i class="fas fa-mobile-alt fa-2x text-warning mb-2"></i>
+                <h5>Orange CI</h5>
+                <p class="text-muted">25 FCFA/SMS</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center">
+                <i class="fas fa-mobile-alt fa-2x text-success mb-2"></i>
+                <h5>MTN CI</h5>
+                <p class="text-muted">30 FCFA/SMS</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center">
+                <i class="fas fa-mobile-alt fa-2x text-info mb-2"></i>
+                <h5>Moov CI</h5>
+                <p class="text-muted">20 FCFA/SMS</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center">
+                <i class="fas fa-coins fa-2x text-primary mb-2"></i>
+                <h5>Devise</h5>
+                <p class="text-muted">Franc CFA (FCFA)</p>
+            </div>
+        </div>
     </div>
-    <div class="col-md-4">
-        <h2>Gestion des contacts</h2>
-        <p>Organisez et segmentez facilement votre liste de contacts.</p>
+    
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-shield-alt"></i> Conformité Réglementaire</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Gestion du consentement obligatoire</li>
+                        <li><i class="fas fa-check text-success"></i> Système de désabonnement (STOP)</li>
+                        <li><i class="fas fa-check text-success"></i> Limite de 10 SMS/jour par destinataire</li>
+                        <li><i class="fas fa-check text-success"></i> Respect des heures d'envoi</li>
+                        <li><i class="fas fa-check text-success"></i> Logs d'audit complets</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-cogs"></i> Fonctionnalités Avancées</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Détection automatique de l'opérateur</li>
+                        <li><i class="fas fa-check text-success"></i> Formatage automatique des numéros</li>
+                        <li><i class="fas fa-check text-success"></i> Templates de messages personnalisés</li>
+                        <li><i class="fas fa-check text-success"></i> Analytics par opérateur</li>
+                        <li><i class="fas fa-check text-success"></i> Gestion des soldes en FCFA</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h3>Prêt à commencer ?</h3>
+                    <p class="lead">Rejoignez les entreprises qui utilisent déjà notre plateforme pour leurs campagnes SMS en Côte d'Ivoire.</p>
+                    {% if 'user_id' not in session %}
+                        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-rocket"></i> Commencer maintenant
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

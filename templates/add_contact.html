@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Ajouter un Contact</h1>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Nouveau Contact</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="name">Nom complet *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Numéro de téléphone *</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   placeholder="+225 XX XX XX XX ou 0X XX XX XX" required>
+                            <small class="form-text text-muted">
+                                Format accepté : +225 XX XX XX XX ou 0X XX XX XX
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email (optionnel)</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="group_id">Groupe (optionnel)</label>
+                            <select class="form-control" id="group_id" name="group_id">
+                                <option value="">Aucun groupe</option>
+                                {% for group in groups %}
+                                <option value="{{ group[0] }}">{{ group[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="consent" name="consent">
+                                <label class="form-check-label" for="consent">
+                                    <strong>Consentement pour recevoir des SMS</strong>
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Le consentement est obligatoire pour envoyer des SMS marketing.
+                                Sans consentement, le contact ne pourra recevoir que des SMS transactionnels.
+                            </small>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h5>Informations importantes :</h5>
+                            <ul>
+                                <li>Le numéro sera automatiquement formaté pour la Côte d'Ivoire</li>
+                                <li>L'opérateur sera détecté automatiquement</li>
+                                <li>Le contact peut se désabonner en répondant "STOP" à tout moment</li>
+                            </ul>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Ajouter le contact</button>
+                        <a href="{{ url_for('contacts') }}" class="btn btn-secondary">Annuler</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Formatage automatique du numéro de téléphone
+document.getElementById('phone').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    
+    if (value.startsWith('225')) {
+        value = value.substring(3);
+    }
+    
+    if (value.length > 0 && !value.startsWith('0')) {
+        value = '0' + value;
+    }
+    
+    e.target.value = value;
+});
+</script>
+{% endblock %}

@@ -1,25 +1,206 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h1>Inscription</h1>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    <div class="form-group">
-        {{ form.username.label }}
-        {{ form.username(class="form-control") }}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header text-center">
+                    <h3><i class="fas fa-user-plus"></i> Inscription</h3>
+                    <p class="text-muted">Créez votre compte SMS Marketing pour la Côte d'Ivoire</p>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="username">Nom d'utilisateur *</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control" id="username" name="username" 
+                                               placeholder="Votre nom d'utilisateur" required>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Minimum 3 caractères, lettres et chiffres uniquement
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="email">Adresse email *</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                        </div>
+                                        <input type="email" class="form-control" id="email" name="email" 
+                                               placeholder="votre@email.com" required>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Nous vous enverrons des notifications importantes
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="password">Mot de passe *</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                        </div>
+                                        <input type="password" class="form-control" id="password" name="password" 
+                                               placeholder="Votre mot de passe" required>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Minimum 6 caractères
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="confirm_password">Confirmer le mot de passe *</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                        </div>
+                                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                                               placeholder="Confirmez votre mot de passe" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    J'accepte les <a href="#" data-toggle="modal" data-target="#termsModal">conditions d'utilisation</a> et la <a href="#" data-toggle="modal" data-target="#privacyModal">politique de confidentialité</a>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="newsletter" name="newsletter">
+                                <label class="form-check-label" for="newsletter">
+                                    Je souhaite recevoir les actualités et conseils SMS Marketing
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-user-plus"></i> Créer mon compte
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center">
+                        <p class="text-muted">Déjà un compte ?</p>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-sign-in-alt"></i> Se connecter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        {{ form.email.label }}
-        {{ form.email(class="form-control") }}
+    
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-mobile-alt fa-2x text-primary mb-3"></i>
+                    <h5>Support Multi-Opérateurs</h5>
+                    <p class="text-muted">Orange, MTN et Moov en Côte d'Ivoire</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-shield-alt fa-2x text-success mb-3"></i>
+                    <h5>Conformité Réglementaire</h5>
+                    <p class="text-muted">Respect des réglementations ivoiriennes</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-2x text-info mb-3"></i>
+                    <h5>Analytics Avancés</h5>
+                    <p class="text-muted">Suivez vos performances en temps réel</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        {{ form.password.label }}
-        {{ form.password(class="form-control") }}
+</div>
+
+<!-- Modal Conditions d'utilisation -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Conditions d'utilisation</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Acceptation des conditions</h6>
+                <p>En utilisant cette plateforme, vous acceptez ces conditions d'utilisation.</p>
+                
+                <h6>2. Utilisation du service</h6>
+                <p>Vous vous engagez à utiliser le service de manière responsable et conforme aux réglementations ivoiriennes.</p>
+                
+                <h6>3. Respect du consentement</h6>
+                <p>Vous devez obtenir le consentement explicite de vos contacts avant l'envoi de SMS marketing.</p>
+                
+                <h6>4. Limitation de responsabilité</h6>
+                <p>La plateforme ne peut être tenue responsable des dommages indirects résultant de l'utilisation du service.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        {{ form.confirm_password.label }}
-        {{ form.confirm_password(class="form-control") }}
+</div>
+
+<!-- Modal Politique de confidentialité -->
+<div class="modal fade" id="privacyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Politique de confidentialité</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Collecte des données</h6>
+                <p>Nous collectons uniquement les données nécessaires au fonctionnement du service.</p>
+                
+                <h6>2. Utilisation des données</h6>
+                <p>Vos données sont utilisées exclusivement pour fournir le service SMS Marketing.</p>
+                
+                <h6>3. Protection des données</h6>
+                <p>Nous mettons en œuvre des mesures de sécurité appropriées pour protéger vos données.</p>
+                
+                <h6>4. Partage des données</h6>
+                <p>Vos données ne sont jamais partagées avec des tiers sans votre consentement explicite.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
     </div>
-    {{ form.submit(class="btn btn-primary") }}
-</form>
+</div>
 {% endblock %}

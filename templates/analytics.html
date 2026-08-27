@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Analytics - Marché Ivoirien</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Répartition par Opérateur</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="operatorChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Coûts par Opérateur</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="costChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Statistiques Détaillées</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <td><strong>Total contacts :</strong></td>
+                            <td>{{ analytics.total_contacts }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Orange :</strong></td>
+                            <td>{{ analytics.operator_distribution.get('orange', 0) }} contacts</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MTN :</strong></td>
+                            <td>{{ analytics.operator_distribution.get('mtn', 0) }} contacts</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Moov :</strong></td>
+                            <td>{{ analytics.operator_distribution.get('moov', 0) }} contacts</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Coûts Estimés</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <td><strong>Orange :</strong></td>
+                            <td>{{ analytics.operator_costs.get('orange', 0) }} {{ currency }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MTN :</strong></td>
+                            <td>{{ analytics.operator_costs.get('mtn', 0) }} {{ currency }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Moov :</strong></td>
+                            <td>{{ analytics.operator_costs.get('moov', 0) }} {{ currency }}</td>
+                        </tr>
+                        <tr class="table-info">
+                            <td><strong>Total :</strong></td>
+                            <td><strong>{{ analytics.operator_costs.values()|sum }} {{ currency }}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recommandations pour la Côte d'Ivoire</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5>Orange ({{ analytics.operator_distribution.get('orange', 0) }} contacts)</h5>
+                            <ul>
+                                <li>Coût : 25 FCFA/SMS</li>
+                                <li>Couverture : Excellente</li>
+                                <li>Recommandé pour : Campagnes générales</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>MTN ({{ analytics.operator_distribution.get('mtn', 0) }} contacts)</h5>
+                            <ul>
+                                <li>Coût : 30 FCFA/SMS</li>
+                                <li>Couverture : Très bonne</li>
+                                <li>Recommandé pour : Campagnes premium</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Moov ({{ analytics.operator_distribution.get('moov', 0) }} contacts)</h5>
+                            <ul>
+                                <li>Coût : 20 FCFA/SMS</li>
+                                <li>Couverture : Bonne</li>
+                                <li>Recommandé pour : Campagnes économiques</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Graphique de répartition par opérateur
+const operatorCtx = document.getElementById('operatorChart').getContext('2d');
+new Chart(operatorCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Orange', 'MTN', 'Moov'],
+        datasets: [{
+            data: [
+                {{ analytics.operator_distribution.get('orange', 0) }},
+                {{ analytics.operator_distribution.get('mtn', 0) }},
+                {{ analytics.operator_distribution.get('moov', 0) }}
+            ],
+            backgroundColor: ['#FFA500', '#00FF00', '#0080FF']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Graphique des coûts
+const costCtx = document.getElementById('costChart').getContext('2d');
+new Chart(costCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Orange', 'MTN', 'Moov'],
+        datasets: [{
+            label: 'Coût estimé ({{ currency }})',
+            data: [
+                {{ analytics.operator_costs.get('orange', 0) }},
+                {{ analytics.operator_costs.get('mtn', 0) }},
+                {{ analytics.operator_costs.get('moov', 0) }}
+            ],
+            backgroundColor: ['#FFA500', '#00FF00', '#0080FF']
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
