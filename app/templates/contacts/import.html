@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Importer des contacts{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px;margin:0 auto;">
+    <h1>Importer des contacts (CSV)</h1>
+    <p class="text-muted">
+        Le fichier doit contenir une colonne <code>phone</code> (obligatoire), et optionnellement
+        <code>first_name</code>, <code>last_name</code>, <code>email</code>.
+    </p>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="form-group">{{ form.file.label }} {{ form.file() }}</div>
+        <div class="form-group">{{ form.group_id.label }} {{ form.group_id(class="form-control") }}</div>
+        {{ form.submit(class="btn") }}
+        <a href="{{ url_for('contacts.index') }}" class="btn btn-outline">Annuler</a>
+    </form>
+</div>
+{% endblock %}

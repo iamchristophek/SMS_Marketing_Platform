@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Accueil{% endblock %}
+{% block content %}
+<div class="hero">
+    <h1>La plateforme SMS marketing pensée pour les PME &amp; PMI ivoiriennes</h1>
+    <p>Envoyez des campagnes SMS ciblées, gérez vos contacts et suivez vos résultats en temps réel — sans engagement, payez uniquement les crédits que vous utilisez.</p>
+    {% if current_user.is_authenticated %}
+        <a href="{{ url_for('dashboard.home') }}" class="btn">Accéder au tableau de bord</a>
+    {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn">Essai gratuit — {{ config.FREE_TRIAL_CREDITS }} crédits offerts</a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline">Se connecter</a>
+    {% endif %}
+</div>
+
+<div class="grid grid-3">
+    <div class="card">
+        <h2>📢 Campagnes ciblées</h2>
+        <p>Créez des campagnes SMS personnalisées et programmez leur envoi à l'heure qui convient à vos clients.</p>
+    </div>
+    <div class="card">
+        <h2>📊 Suivi en temps réel</h2>
+        <p>Taux de livraison, messages envoyés, historique complet : pilotez vos actions marketing avec des chiffres fiables.</p>
+    </div>
+    <div class="card">
+        <h2>👥 Contacts organisés</h2>
+        <p>Importez vos contacts par fichier CSV, segmentez-les en groupes et respectez automatiquement les demandes de désabonnement (STOP).</p>
+    </div>
+    <div class="card">
+        <h2>🇨🇮 Paiement local</h2>
+        <p>Rechargez vos crédits SMS via Mobile Money (Orange Money, MTN, Moov, Wave) ou carte bancaire.</p>
+    </div>
+    <div class="card">
+        <h2>🔌 API pour développeurs</h2>
+        <p>Connectez votre site e-commerce ou votre ERP à notre API pour automatiser vos SMS transactionnels.</p>
+    </div>
+    <div class="card">
+        <h2>🔒 Sécurisé</h2>
+        <p>Vos données et celles de vos clients sont protégées : chiffrement des mots de passe, isolation stricte entre entreprises.</p>
+    </div>
+</div>
+{% endblock %}

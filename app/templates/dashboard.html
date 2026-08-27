@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord{% endblock %}
+{% block content %}
+<h1>Tableau de bord</h1>
+<p>Bienvenue, <strong>{{ business.name }}</strong> !</p>
+
+<div class="grid grid-4 mb-1">
+    <div class="card stat">
+        <div class="value">{{ business.credit_balance }}</div>
+        <div class="label">Crédits disponibles</div>
+    </div>
+    <div class="card stat">
+        <div class="value">{{ total_campaigns }}</div>
+        <div class="label">Campagnes créées</div>
+    </div>
+    <div class="card stat">
+        <div class="value">{{ total_contacts }}</div>
+        <div class="label">Contacts actifs</div>
+    </div>
+    <div class="card stat">
+        <div class="value">{{ average_open_rate }}%</div>
+        <div class="label">Taux de livraison moyen</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="flex-between">
+        <h2>Campagnes récentes</h2>
+        <a href="{{ url_for('campaigns.new') }}" class="btn">+ Nouvelle campagne</a>
+    </div>
+    {% if campaigns %}
+    <table>
+        <thead><tr><th>Nom</th><th>Statut</th><th>Destinataires</th><th>Envoyés</th><th></th></tr></thead>
+        <tbody>
+        {% for campaign in campaigns %}
+            <tr>
+                <td>{{ campaign.name }}</td>
+                <td><span class="status-pill status-{{ campaign.status }}">{{ campaign.status }}</span></td>
+                <td>{{ campaign.total_recipients }}</td>
+                <td>{{ campaign.total_sent }}</td>
+                <td><a href="{{ url_for('campaigns.detail', campaign_id=campaign.id) }}" class="btn btn-sm btn-outline">Voir</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="text-muted">Aucune campagne pour le moment.</p>
+    {% endif %}
+</div>
+
+{% if business.credit_balance < 20 %}
+<div class="card">
+    <p>⚠️ Votre solde de crédits est faible. <a href="{{ url_for('billing.index') }}">Rechargez votre compte</a> pour continuer à envoyer des SMS.</p>
+</div>
+{% endif %}
+{% endblock %}

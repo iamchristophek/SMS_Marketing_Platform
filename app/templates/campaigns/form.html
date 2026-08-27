@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:560px;margin:0 auto;">
+    <h1>{{ title }}</h1>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">{{ form.name.label }} {{ form.name(class="form-control") }}</div>
+        <div class="form-group">
+            {{ form.message.label }}
+            {{ form.message(class="form-control", id="message-field", maxlength=640) }}
+            <div class="help-text"><span id="char-count">0</span>/640 caractères — <span id="segment-count">0</span> SMS par destinataire</div>
+        </div>
+        <div class="form-group">{{ form.group_id.label }} {{ form.group_id(class="form-control") }}</div>
+        <div class="form-group">{{ form.scheduled_at.label }} {{ form.scheduled_at(class="form-control") }}</div>
+        {{ form.submit(class="btn") }}
+        <a href="{{ url_for('campaigns.index') }}" class="btn btn-outline">Annuler</a>
+    </form>
+</div>
+<script>
+    const field = document.getElementById('message-field');
+    const charCount = document.getElementById('char-count');
+    const segmentCount = document.getElementById('segment-count');
+    function update() {
+        const len = field.value.length;
+        charCount.textContent = len;
+        segmentCount.textContent = len === 0 ? 0 : (len <= 160 ? 1 : Math.ceil(len / 153));
+    }
+    field.addEventListener('input', update);
+    update();
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Contacts{% endblock %}
+{% block content %}
+<div class="flex-between">
+    <h1>Contacts</h1>
+    <div>
+        <a href="{{ url_for('contacts.groups') }}" class="btn btn-outline">Groupes</a>
+        <a href="{{ url_for('contacts.import_contacts') }}" class="btn btn-secondary">Importer un CSV</a>
+        <a href="{{ url_for('contacts.new') }}" class="btn">+ Nouveau contact</a>
+    </div>
+</div>
+
+<div class="card">
+    {% if contacts %}
+    <table>
+        <thead><tr><th>Nom</th><th>Téléphone</th><th>Email</th><th>Groupes</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+        {% for contact in contacts %}
+            <tr>
+                <td>{{ contact.full_name }}</td>
+                <td>{{ contact.phone_e164 }}</td>
+                <td>{{ contact.email or '—' }}</td>
+                <td>{{ contact.groups|map(attribute='name')|join(', ') or '—' }}</td>
+                <td>{% if contact.opted_out %}<span class="status-pill status-cancelled">Désabonné</span>{% else %}<span class="status-pill status-sent">Actif</span>{% endif %}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('contacts.delete', contact_id=contact.id) }}" onsubmit="return confirm('Supprimer ce contact ?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% if pagination.pages > 1 %}
+    <div class="mt-1">
+        {% if pagination.has_prev %}<a href="{{ url_for('contacts.index', page=pagination.prev_num) }}">&laquo; Précédent</a>{% endif %}
+        <span class="text-muted"> Page {{ pagination.page }} / {{ pagination.pages }} </span>
+        {% if pagination.has_next %}<a href="{{ url_for('contacts.index', page=pagination.next_num) }}">Suivant &raquo;</a>{% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+        <p class="text-muted">Aucun contact. Ajoutez-en un ou importez un fichier CSV.</p>
+    {% endif %}
+</div>
+{% endblock %}

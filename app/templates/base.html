@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}PME SMS{% endblock %} — Plateforme SMS Marketing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div id="branding">
+                <a href="{{ url_for('dashboard.index') }}"><h1><span class="highlight">PME</span>SMS</h1></a>
+            </div>
+
+            <nav>
+                <ul>
+                    {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('dashboard.home') }}">Tableau de bord</a></li>
+                        <li><a href="{{ url_for('contacts.index') }}">Contacts</a></li>
+                        <li><a href="{{ url_for('campaigns.index') }}">Campagnes</a></li>
+                        <li><a href="{{ url_for('billing.index') }}">Crédits</a></li>
+                        <li><span class="badge-credits">💳 {{ current_user.business.credit_balance }} crédits</span></li>
+                        <li><a href="{{ url_for('auth.logout') }}">Déconnexion</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('auth.login') }}">Connexion</a></li>
+                        <li><a href="{{ url_for('auth.register') }}">Inscription</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'error' if category == 'error' else category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+        &copy; {{ 2026 }} PME SMS — Plateforme de marketing SMS pour les PME/PMI de Côte d'Ivoire.
+    </footer>
+</body>
+</html>

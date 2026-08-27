@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Crédits SMS{% endblock %}
+{% block content %}
+<h1>Crédits SMS</h1>
+<div class="card stat" style="max-width:260px;">
+    <div class="value">{{ balance }}</div>
+    <div class="label">Crédits disponibles</div>
+</div>
+
+<h2 class="mt-2">Recharger mon compte</h2>
+<div class="grid grid-4">
+    {% for package in packages %}
+    <div class="card pricing-card">
+        <h3>{{ package.name }}</h3>
+        <div class="price">{{ "{:,}".format(package.price_xof).replace(",", " ") }} XOF</div>
+        <p>{{ package.credits }} crédits SMS</p>
+        <p class="text-muted">{{ package.price_per_sms }} XOF / SMS</p>
+        <form method="POST" action="{{ url_for('billing.buy', package_id=package.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn">Acheter</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+
+<h2 class="mt-2">Historique des transactions</h2>
+<div class="card">
+    {% if transactions %}
+    <table>
+        <thead><tr><th>Date</th><th>Type</th><th>Montant</th><th>Solde après</th><th>Description</th></tr></thead>
+        <tbody>
+        {% for tx in transactions %}
+            <tr>
+                <td>{{ tx.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>{{ tx.type }}</td>
+                <td>{{ '+' if tx.amount > 0 else '' }}{{ tx.amount }}</td>
+                <td>{{ tx.balance_after }}</td>
+                <td>{{ tx.description }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="text-muted">Aucune transaction pour le moment.</p>
+    {% endif %}
+</div>
+{% endblock %}

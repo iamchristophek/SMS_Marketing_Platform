@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Groupes de contacts{% endblock %}
+{% block content %}
+<div class="flex-between">
+    <h1>Groupes de contacts</h1>
+    <a href="{{ url_for('contacts.new_group') }}" class="btn">+ Nouveau groupe</a>
+</div>
+<div class="card">
+    {% if groups %}
+    <table>
+        <thead><tr><th>Nom</th><th>Description</th><th>Contacts actifs</th><th></th></tr></thead>
+        <tbody>
+        {% for group in groups %}
+            <tr>
+                <td>{{ group.name }}</td>
+                <td>{{ group.description or '—' }}</td>
+                <td>{{ group.active_contact_count }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('contacts.delete_group', group_id=group.id) }}" onsubmit="return confirm('Supprimer ce groupe ?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="text-muted">Aucun groupe. Créez-en un pour segmenter vos campagnes.</p>
+    {% endif %}
+</div>
+<a href="{{ url_for('contacts.index') }}" class="btn btn-outline">&laquo; Retour aux contacts</a>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Campagnes{% endblock %}
+{% block content %}
+<div class="flex-between">
+    <h1>Campagnes</h1>
+    <a href="{{ url_for('campaigns.new') }}" class="btn">+ Nouvelle campagne</a>
+</div>
+<div class="card">
+    {% if campaigns %}
+    <table>
+        <thead><tr><th>Nom</th><th>Statut</th><th>Destinataires</th><th>Envoyés</th><th>Livrés</th><th>Créée le</th><th></th></tr></thead>
+        <tbody>
+        {% for campaign in campaigns %}
+            <tr>
+                <td>{{ campaign.name }}</td>
+                <td><span class="status-pill status-{{ campaign.status }}">{{ campaign.status }}</span></td>
+                <td>{{ campaign.total_recipients }}</td>
+                <td>{{ campaign.total_sent }}</td>
+                <td>{{ campaign.total_delivered }}</td>
+                <td>{{ campaign.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td><a href="{{ url_for('campaigns.detail', campaign_id=campaign.id) }}" class="btn btn-sm btn-outline">Voir</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% if pagination.pages > 1 %}
+    <div class="mt-1">
+        {% if pagination.has_prev %}<a href="{{ url_for('campaigns.index', page=pagination.prev_num) }}">&laquo; Précédent</a>{% endif %}
+        <span class="text-muted"> Page {{ pagination.page }} / {{ pagination.pages }} </span>
+        {% if pagination.has_next %}<a href="{{ url_for('campaigns.index', page=pagination.next_num) }}">Suivant &raquo;</a>{% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+        <p class="text-muted">Aucune campagne pour le moment.</p>
+    {% endif %}
+</div>
+{% endblock %}

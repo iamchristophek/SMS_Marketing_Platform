@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.name }}{% endblock %}
+{% block content %}
+<div class="flex-between">
+    <h1>{{ campaign.name }}</h1>
+    <span class="status-pill status-{{ campaign.status }}">{{ campaign.status }}</span>
+</div>
+
+<div class="card">
+    <p><strong>Message :</strong></p>
+    <p>{{ campaign.message_body }}</p>
+    <p class="text-muted">{{ campaign.segments_per_message }} SMS par destinataire</p>
+</div>
+
+<div class="grid grid-4 mb-1">
+    <div class="card stat"><div class="value">{{ campaign.total_recipients }}</div><div class="label">Destinataires</div></div>
+    <div class="card stat"><div class="value">{{ campaign.total_sent }}</div><div class="label">Envoyés</div></div>
+    <div class="card stat"><div class="value">{{ campaign.total_delivered }}</div><div class="label">Livrés</div></div>
+    <div class="card stat"><div class="value">{{ campaign.open_rate }}%</div><div class="label">Taux de livraison</div></div>
+</div>
+
+<div class="card">
+    <p><strong>Créée le :</strong> {{ campaign.created_at.strftime('%d/%m/%Y à %H:%M') }}</p>
+    {% if campaign.scheduled_at %}<p><strong>Planifiée pour :</strong> {{ campaign.scheduled_at.strftime('%d/%m/%Y à %H:%M') }}</p>{% endif %}
+    <p><strong>Crédits réservés :</strong> {{ campaign.credits_reserved }} — <strong>Crédits utilisés :</strong> {{ campaign.credits_used }}</p>
+</div>
+
+<div class="flex-between">
+    <a href="{{ url_for('campaigns.index') }}" class="btn btn-outline">&laquo; Retour aux campagnes</a>
+    {% if campaign.is_editable() %}
+    <form method="POST" action="{{ url_for('campaigns.delete', campaign_id=campaign.id) }}" onsubmit="return confirm('Annuler et supprimer cette campagne ?');">
+        <button type="submit" class="btn btn-danger">Supprimer la campagne</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}
