@@ -51,6 +51,11 @@ class Contact(db.Model):
     opted_out = db.Column(db.Boolean, nullable=False, default=False)
     opted_out_at = db.Column(db.DateTime(timezone=True))
 
+    # Preuve de consentement marketing (obligatoire pour l'envoi de SMS
+    # promotionnels en Côte d'Ivoire, cf. REGULATORY_CONFIG côté legacy).
+    consent_given = db.Column(db.Boolean, nullable=False, default=False)
+    consent_given_at = db.Column(db.DateTime(timezone=True))
+
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
 
     business = db.relationship("Business", back_populates="contacts")
