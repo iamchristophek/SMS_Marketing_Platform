@@ -85,6 +85,7 @@ class BaseConfig:
     CINETPAY_API_KEY = os.environ.get("CINETPAY_API_KEY")
     CINETPAY_SITE_ID = os.environ.get("CINETPAY_SITE_ID")
     CINETPAY_SECRET_KEY = os.environ.get("CINETPAY_SECRET_KEY")
+    PAYMENT_RECONCILE_AFTER_MINUTES = int(os.environ.get("PAYMENT_RECONCILE_AFTER_MINUTES", 15))
 
     # --- Crédits / tarification ---
     SMS_COST_CREDITS = int(os.environ.get("SMS_COST_CREDITS", 1))

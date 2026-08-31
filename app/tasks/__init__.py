@@ -21,6 +21,10 @@ def make_celery(app):
                 "task": "app.tasks.sms_tasks.dispatch_scheduled_campaigns",
                 "schedule": 60.0,  # vérifie chaque minute les campagnes planifiées
             },
+            "reconcile-pending-payments": {
+                "task": "app.tasks.payment_tasks.reconcile_pending_payments",
+                "schedule": 300.0,  # rattrape les paiements Mobile Money sans webhook toutes les 5 min
+            },
         },
     )
 

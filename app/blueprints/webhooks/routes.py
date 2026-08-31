@@ -77,14 +77,28 @@ def payment_callback():
     if not provider_reference:
         return jsonify(error="référence de transaction manquante"), 400
 
-    payment = Payment.query.filter_by(provider_reference=provider_reference).first()
+    provider = get_payment_provider()
+    received_token = request.headers.get("X-TOKEN") or request.headers.get("X-Token", "")
+    if not provider.verify_notification_signature(payload, received_token):
+        current_app.logger.warning(
+            "Notification de paiement rejetée : signature invalide (transaction_id=%s)",
+            provider_reference,
+        )
+        return jsonify(error="signature invalide"), 400
+
+    # Verrouille la ligne le temps du traitement pour empêcher une double
+    # créditation si CinetPay livre la même notification deux fois en
+    # parallèle (retry réseau côté fournisseur). No-op sur SQLite (dev/tests),
+    # verrou réel sur PostgreSQL (prod).
+    payment = (
+        Payment.query.filter_by(provider_reference=provider_reference).with_for_update().first()
+    )
     if payment is None:
         return jsonify(status="ignoré, paiement inconnu"), 200
 
     if payment.status != Payment.STATUS_PENDING:
         return jsonify(status="déjà traité"), 200
 
-    provider = get_payment_provider()
     real_status = provider.verify_status(provider_reference)
 
     if real_status == "success":
