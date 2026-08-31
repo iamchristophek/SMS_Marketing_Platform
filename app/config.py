@@ -66,7 +66,7 @@ class BaseConfig:
     # --- Fournisseur SMS ---
     # Valeurs possibles : console (dev/local), africastalking, orange, twilio
     SMS_PROVIDER = os.environ.get("SMS_PROVIDER", "console")
-    SMS_SENDER_ID = os.environ.get("SMS_SENDER_ID", "PMEPMI")
+    SMS_SENDER_ID = os.environ.get("SMS_SENDER_ID", "BAORYX")
     SMS_MAX_PER_MESSAGE_SEGMENTS = int(os.environ.get("SMS_MAX_PER_MESSAGE_SEGMENTS", 3))
 
     AT_USERNAME = os.environ.get("AFRICASTALKING_USERNAME")
@@ -93,7 +93,7 @@ class BaseConfig:
 
     # --- Divers ---
     DEFAULT_COUNTRY_CODE = "225"  # Côte d'Ivoire
-    MAIL_SUPPORT_ADDRESS = os.environ.get("MAIL_SUPPORT_ADDRESS", "support@pmesms.ci")
+    MAIL_SUPPORT_ADDRESS = os.environ.get("MAIL_SUPPORT_ADDRESS", "support@baoryx.ci")
     PREFERRED_URL_SCHEME = "https"
 
     @staticmethod

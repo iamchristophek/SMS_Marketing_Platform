@@ -3,13 +3,13 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: pmesms
-      POSTGRES_PASSWORD: pmesms
-      POSTGRES_DB: pmesms
+      POSTGRES_USER: baoryx
+      POSTGRES_PASSWORD: baoryx
+      POSTGRES_DB: baoryx
     volumes:
-      - pmesms_db_data:/var/lib/postgresql/data
+      - baoryx_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pmesms"]
+      test: ["CMD-SHELL", "pg_isready -U baoryx"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -66,4 +66,4 @@ services:
     command: celery -A celery_worker.celery beat --loglevel=info
 
 volumes:
-  pmesms_db_data:
+  baoryx_db_data:

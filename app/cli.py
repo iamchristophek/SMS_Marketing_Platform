@@ -53,7 +53,7 @@ def register_cli_commands(app):
             biz = Business(name="PME Démo", sector="Commerce", city="Abidjan", credit_balance=100)
             db.session.add(biz)
             db.session.flush()
-            user = User(username="demo", email="demo@pmesms.ci", role=User.ROLE_OWNER, business_id=biz.id)
+            user = User(username="demo", email="demo@baoryx.ci", role=User.ROLE_OWNER, business_id=biz.id)
             user.set_password("Demo1234!")
             db.session.add(user)
             click.echo("Utilisateur de démonstration créé : demo / Demo1234!")

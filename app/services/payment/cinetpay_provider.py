@@ -68,7 +68,7 @@ class CinetPayProvider(PaymentProvider):
         return response.json()
 
     def initiate(self, payment, notify_url: str, return_url: str) -> PaymentInitResult:
-        transaction_id = f"pmesms-{payment.id}-{payment.business_id}"
+        transaction_id = f"baoryx-{payment.id}-{payment.business_id}"
         body = {
             "apikey": self.api_key,
             "site_id": self.site_id,

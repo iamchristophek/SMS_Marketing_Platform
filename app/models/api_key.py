@@ -38,7 +38,7 @@ class ApiKey(db.Model):
     @classmethod
     def generate(cls, business_id, name):
         """Génère une nouvelle clé. Retourne (instance, valeur_en_clair)."""
-        raw_key = f"pmesms_{secrets.token_urlsafe(32)}"
+        raw_key = f"baoryx_{secrets.token_urlsafe(32)}"
         instance = cls(
             business_id=business_id,
             name=name,
