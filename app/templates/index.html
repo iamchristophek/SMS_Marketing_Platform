@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon %}
 {% block title %}Accueil{% endblock %}
 {% block content %}
 <div class="hero">
@@ -13,28 +14,28 @@
 </div>
 
 <div class="grid grid-3">
-    <div class="card">
-        <h2>📢 Campagnes ciblées</h2>
+    <div class="card feature-card">
+        <h2><span class="feature-icon">{{ icon('megaphone', 'icon icon-lg') }}</span> Campagnes ciblées</h2>
         <p>Créez des campagnes SMS personnalisées et programmez leur envoi à l'heure qui convient à vos clients.</p>
     </div>
-    <div class="card">
-        <h2>📊 Suivi en temps réel</h2>
+    <div class="card feature-card">
+        <h2><span class="feature-icon">{{ icon('chart', 'icon icon-lg') }}</span> Suivi en temps réel</h2>
         <p>Taux de livraison, messages envoyés, historique complet : pilotez vos actions marketing avec des chiffres fiables.</p>
     </div>
-    <div class="card">
-        <h2>👥 Contacts organisés</h2>
+    <div class="card feature-card">
+        <h2><span class="feature-icon">{{ icon('users', 'icon icon-lg') }}</span> Contacts organisés</h2>
         <p>Importez vos contacts par fichier CSV, segmentez-les en groupes et respectez automatiquement les demandes de désabonnement (STOP).</p>
     </div>
-    <div class="card">
-        <h2>🇨🇮 Paiement local</h2>
+    <div class="card feature-card">
+        <h2><span class="feature-icon">{{ icon('phone', 'icon icon-lg') }}</span> Paiement local</h2>
         <p>Rechargez vos crédits SMS via Mobile Money (Orange Money, MTN, Moov, Wave) ou carte bancaire.</p>
     </div>
-    <div class="card">
-        <h2>🔌 API pour développeurs</h2>
+    <div class="card feature-card">
+        <h2><span class="feature-icon">{{ icon('bolt', 'icon icon-lg') }}</span> API pour développeurs</h2>
         <p>Connectez votre site e-commerce ou votre ERP à notre API pour automatiser vos SMS transactionnels.</p>
     </div>
-    <div class="card">
-        <h2>🔒 Sécurisé</h2>
+    <div class="card feature-card">
+        <h2><span class="feature-icon">{{ icon('shield', 'icon icon-lg') }}</span> Sécurisé</h2>
         <p>Vos données et celles de vos clients sont protégées : chiffrement des mots de passe, isolation stricte entre entreprises.</p>
     </div>
 </div>

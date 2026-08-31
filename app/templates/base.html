@@ -5,9 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}PME SMS{% endblock %} — Plateforme SMS Marketing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    {% from "_icons.html" import icon %}
     <header>
         <div class="container">
             <div id="branding">
@@ -17,15 +21,15 @@
             <nav>
                 <ul>
                     {% if current_user.is_authenticated %}
-                        <li><a href="{{ url_for('dashboard.home') }}">Tableau de bord</a></li>
-                        <li><a href="{{ url_for('contacts.index') }}">Contacts</a></li>
-                        <li><a href="{{ url_for('campaigns.index') }}">Campagnes</a></li>
-                        <li><a href="{{ url_for('billing.index') }}">Crédits</a></li>
-                        <li><span class="badge-credits">💳 {{ current_user.business.credit_balance }} crédits</span></li>
-                        <li><a href="{{ url_for('auth.logout') }}">Déconnexion</a></li>
+                        <li class="{{ 'current' if request.endpoint == 'dashboard.home' }}"><a href="{{ url_for('dashboard.home') }}">{{ icon('chart') }} Tableau de bord</a></li>
+                        <li class="{{ 'current' if request.endpoint and request.endpoint.startswith('contacts.') }}"><a href="{{ url_for('contacts.index') }}">{{ icon('users') }} Contacts</a></li>
+                        <li class="{{ 'current' if request.endpoint and request.endpoint.startswith('campaigns.') }}"><a href="{{ url_for('campaigns.index') }}">{{ icon('megaphone') }} Campagnes</a></li>
+                        <li class="{{ 'current' if request.endpoint and request.endpoint.startswith('billing.') }}"><a href="{{ url_for('billing.index') }}">{{ icon('wallet') }} Crédits</a></li>
+                        <li><span class="badge-credits">{{ icon('wallet') }} {{ current_user.business.credit_balance }} crédits</span></li>
+                        <li><a href="{{ url_for('auth.logout') }}">{{ icon('logout') }} Déconnexion</a></li>
                     {% else %}
-                        <li><a href="{{ url_for('auth.login') }}">Connexion</a></li>
-                        <li><a href="{{ url_for('auth.register') }}">Inscription</a></li>
+                        <li><a href="{{ url_for('auth.login') }}">{{ icon('login') }} Connexion</a></li>
+                        <li><a href="{{ url_for('auth.register') }}">{{ icon('plus') }} Inscription</a></li>
                     {% endif %}
                 </ul>
             </nav>
