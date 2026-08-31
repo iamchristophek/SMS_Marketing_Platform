@@ -25,7 +25,7 @@ def send_campaign(self, campaign_id: int):
         )
     except Exception as exc:  # noqa: BLE001 - on journalise puis on relance via Celery
         logger.exception("Échec traitement campagne %s", campaign_id)
-        campaign = Campaign.query.get(campaign_id)
+        campaign = db.session.get(Campaign, campaign_id)
         if campaign:
             campaign.status = Campaign.STATUS_FAILED
             db.session.commit()

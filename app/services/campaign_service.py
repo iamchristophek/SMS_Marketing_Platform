@@ -52,7 +52,7 @@ def execute_campaign(campaign_id: int, sender_id: str, sms_cost_credits: int):
     """Envoie effectivement les SMS d'une campagne déjà planifiée/en file
     d'attente. Conçu pour être appelé depuis une tâche Celery (ou
     directement en environnement de test avec CELERY_TASK_ALWAYS_EAGER)."""
-    campaign = Campaign.query.get(campaign_id)
+    campaign = db.session.get(Campaign, campaign_id)
     if campaign is None:
         return
     if campaign.status not in (Campaign.STATUS_SCHEDULED, Campaign.STATUS_DRAFT):
