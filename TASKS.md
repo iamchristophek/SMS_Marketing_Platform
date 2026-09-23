@@ -94,9 +94,9 @@ Gunicorn, worker et beat Celery, navigateur Chromium.
 - [x] Seuil d'alerte de solde faible configurable
 
 ### Compte
-- [ ] Page « Mon compte » : entreprise (nom, secteur, ville, téléphone) et utilisateur
-- [ ] Lien vers le changement de mot de passe dans la navigation
-- [ ] Écran de gestion des clés API (créer, voir le préfixe, révoquer)
+- [x] Page « Mon compte » : entreprise (nom, secteur, ville, téléphone) et utilisateur
+- [x] Lien vers le changement de mot de passe dans la navigation
+- [x] Écran de gestion des clés API (créer, voir le préfixe, révoquer)
 - [x] Types de transaction en français sur la page Crédits
 
 ### Intégrité des données

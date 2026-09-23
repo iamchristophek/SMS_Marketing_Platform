@@ -71,6 +71,7 @@ def _register_blueprints(app):
     from app.blueprints.webhooks import webhooks_bp
     from app.blueprints.api import api_bp
     from app.blueprints.templates_msg import templates_bp
+    from app.blueprints.account import account_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -78,6 +79,7 @@ def _register_blueprints(app):
     app.register_blueprint(campaigns_bp)
     app.register_blueprint(billing_bp)
     app.register_blueprint(templates_bp)
+    app.register_blueprint(account_bp)
     app.register_blueprint(webhooks_bp)
     app.register_blueprint(api_bp, url_prefix="/api/v1")
     # Les webhooks (callbacks externes signés par le fournisseur) ne

@@ -391,3 +391,5 @@ form.inline { display: inline; }
     .chart { overflow-x: auto; }
     .chart svg { min-width: 560px; }
 }
+.inline-form { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.inline-form .form-control { width: auto; flex: 1 1 220px; }

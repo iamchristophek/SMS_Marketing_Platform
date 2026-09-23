@@ -24,8 +24,9 @@
                         <li class="{{ 'current' if request.endpoint == 'dashboard.home' }}"><a href="{{ url_for('dashboard.home') }}">{{ icon('chart') }} Tableau de bord</a></li>
                         <li class="{{ 'current' if request.endpoint and request.endpoint.startswith('contacts.') }}"><a href="{{ url_for('contacts.index') }}">{{ icon('users') }} Contacts</a></li>
                         <li class="{{ 'current' if request.endpoint and request.endpoint.startswith('campaigns.') }}"><a href="{{ url_for('campaigns.index') }}">{{ icon('megaphone') }} Campagnes</a></li>
-                        <li class="{{ 'current' if request.endpoint and request.endpoint.startswith('billing.') }}"><a href="{{ url_for('billing.index') }}">{{ icon('wallet') }} Crédits</a></li>
-                        <li><span class="badge-credits">{{ icon('wallet') }} {{ current_user.business.credit_balance }} crédits</span></li>
+                        <li class="{{ 'current' if request.endpoint and request.endpoint.startswith('templates_msg.') }}"><a href="{{ url_for('templates_msg.index') }}">{{ icon('bolt') }} Modèles</a></li>
+                        <li><a href="{{ url_for('billing.index') }}" class="badge-credits" title="Acheter des crédits">{{ icon('wallet') }} {{ current_user.business.credit_balance }} crédits</a></li>
+                        <li class="{{ 'current' if request.endpoint and (request.endpoint.startswith('account.') or request.endpoint == 'auth.change_password') }}"><a href="{{ url_for('account.index') }}">{{ icon('users') }} Mon compte</a></li>
                         <li><a href="{{ url_for('auth.logout') }}">{{ icon('logout') }} Déconnexion</a></li>
                     {% else %}
                         <li><a href="{{ url_for('auth.login') }}">{{ icon('login') }} Connexion</a></li>
