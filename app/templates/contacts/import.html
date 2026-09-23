@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Importer des contacts{% endblock %}
+{% block content %}
+<div class="card card-narrow-lg">
+    <h1>Importer des contacts (CSV)</h1>
+    <p class="text-muted">
+        Exportez votre fichier depuis Excel ou Google Sheets au format CSV (virgule ou point-virgule).
+        Colonne obligatoire : <code>telephone</code> (ou <code>phone</code>). Colonnes facultatives :
+        <code>prenom</code>, <code>nom</code>, <code>email</code>, <code>consentement</code> (oui / non).
+        Les doublons et les numéros invalides sont ignorés et comptés.
+    </p>
+    <pre class="code-sample">prenom;nom;telephone;consentement
+Koffi;Kouassi;07 12 34 56 78;oui
+Aya;Traoré;0512345678;non</pre>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="form-group">{{ form.file.label }} {{ form.file() }}</div>
+        <div class="form-group">{{ form.group_id.label }} {{ form.group_id(class="form-control") }}</div>
+        <div class="form-group checkbox">{{ form.consent_all() }} {{ form.consent_all.label }}</div>
+        {{ form.submit(class="btn") }}
+        <a href="{{ url_for('contacts.index') }}" class="btn btn-outline">Annuler</a>
+    </form>
+</div>
+{% endblock %}

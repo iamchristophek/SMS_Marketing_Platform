@@ -9,3 +9,10 @@ htmlcov/
 dist/
 build/
 *.egg-info/
+.env
+*.db
+*.sqlite3
+.vscode/
+.idea/
+# Sauvegardes Redis locales
+dump.rdb

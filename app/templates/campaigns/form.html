@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card card-narrow-lg">
+    <h1>{{ title }}</h1>
+    <p class="text-muted">Étape 1 sur 2 — vous verrez le nombre de destinataires et le coût exact avant de confirmer l'envoi.</p>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">{{ form.name.label }} {{ form.name(class="form-control", placeholder="Ex. : Promo fête des mères") }}</div>
+        {% if templates %}
+        <div class="form-group">
+            {{ form.template_id.label }} {{ form.template_id(class="form-control", id="template-picker") }}
+            <div class="help-text">Choisir un modèle remplace le message ci-dessous. <a href="{{ url_for('templates_msg.index') }}">Gérer mes modèles</a></div>
+        </div>
+        {% endif %}
+        <div class="form-group">
+            {{ form.message.label }}
+            {{ form.message(class="form-control", id="message-field", maxlength=640, rows=5, **{"data-sms-counter": "sms-counter"}) }}
+            <div class="help-text" id="sms-counter"></div>
+            <div class="help-text">Personnalisez avec <code>{prenom}</code> et <code>{nom}</code>.
+                Pensez à indiquer comment se désabonner (« STOP au … »).</div>
+        </div>
+        <div class="form-group">{{ form.group_id.label }} {{ form.group_id(class="form-control") }}</div>
+        <div class="form-group checkbox">{{ form.consent_only() }} {{ form.consent_only.label }}</div>
+        <div class="form-group">{{ form.scheduled_at.label }} {{ form.scheduled_at(class="form-control") }}</div>
+        {{ form.submit(class="btn") }}
+        <a href="{{ url_for('campaigns.index') }}" class="btn btn-outline">Annuler</a>
+    </form>
+</div>
+{# Corps des modèles, lus par le sélecteur ci-dessus (échappés par tojson). #}
+<script id="templates-data" type="application/json">{{ templates_by_id|default({})|tojson }}</script>
+<script src="{{ url_for('static', filename='js/sms-counter.js') }}"></script>
+<script>
+    (function () {
+        var picker = document.getElementById('template-picker');
+        var field = document.getElementById('message-field');
+        if (!picker) return;
+        var bodies = JSON.parse(document.getElementById('templates-data').textContent || '{}');
+        picker.addEventListener('change', function () {
+            var body = bodies[picker.value];
+            if (body === undefined) return;
+            if (field.value.trim() && !confirm('Remplacer le message actuel par ce modèle ?')) return;
+            field.value = body;
+            field.dispatchEvent(new Event('input'));
+        });
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}Baoryx Connect{% endblock %} — Plateforme SMS Marketing</title>
+    <link rel="icon" href="data:,">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% from "_icons.html" import icon %}
+    <header>
+        <div class="container">
+            <div id="branding">
+                <a href="{{ url_for('dashboard.index') }}"><h1><span class="highlight">Baoryx</span> Connect</h1></a>
+            </div>
+
+            <nav>
+                <ul>
+                    {% if current_user.is_authenticated %}
+                        <li class="{{ 'current' if request.endpoint == 'dashboard.home' }}"><a href="{{ url_for('dashboard.home') }}">{{ icon('chart') }} Tableau de bord</a></li>
+                        <li class="{{ 'current' if request.endpoint and request.endpoint.startswith('contacts.') }}"><a href="{{ url_for('contacts.index') }}">{{ icon('users') }} Contacts</a></li>
+                        <li class="{{ 'current' if request.endpoint and request.endpoint.startswith('campaigns.') }}"><a href="{{ url_for('campaigns.index') }}">{{ icon('megaphone') }} Campagnes</a></li>
+                        <li class="{{ 'current' if request.endpoint and request.endpoint.startswith('templates_msg.') }}"><a href="{{ url_for('templates_msg.index') }}">{{ icon('bolt') }} Modèles</a></li>
+                        <li><a href="{{ url_for('billing.index') }}" class="badge-credits" title="Acheter des crédits">{{ icon('wallet') }} {{ current_user.business.credit_balance }} crédits</a></li>
+                        <li class="{{ 'current' if request.endpoint and (request.endpoint.startswith('account.') or request.endpoint == 'auth.change_password') }}"><a href="{{ url_for('account.index') }}">{{ icon('users') }} Mon compte</a></li>
+                        <li><a href="{{ url_for('auth.logout') }}">{{ icon('logout') }} Déconnexion</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('auth.login') }}">{{ icon('login') }} Connexion</a></li>
+                        <li><a href="{{ url_for('auth.register') }}">{{ icon('plus') }} Inscription</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        {% if insecure_transport %}
+        <div class="alert alert-error">
+            {{ icon('alert-triangle') }}
+            <span><strong>Connexion non sécurisée.</strong> Ce serveur exige HTTPS pour la connexion :
+            ouvrez-le avec une adresse <code>https://</code>. Sans cela, l'inscription et la connexion
+            échoueront. (Pour un test local sans certificat uniquement, l'administrateur peut définir
+            <code>SESSION_COOKIE_SECURE=false</code>.)</span>
+        </div>
+        {% endif %}
+
+        {% if form is defined and form.errors %}
+        <div class="alert alert-error" role="alert">
+            {{ icon('alert-triangle') }}
+            <div>
+                <strong>Le formulaire contient des erreurs :</strong>
+                <ul class="form-errors">
+                {% for field_name, errors in form.errors.items() %}
+                    {% for error in errors %}
+                    <li>{% if form[field_name] is defined and form[field_name].label %}{{ form[field_name].label.text }} : {% endif %}{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'error' if category == 'error' else category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+        &copy; {{ 2026 }} Baoryx Connect — Plateforme de marketing SMS pour les PME/PMI de Côte d'Ivoire.
+    </footer>
+</body>
+</html>

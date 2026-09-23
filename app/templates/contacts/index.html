@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Contacts{% endblock %}
+{% block content %}
+<div class="flex-between">
+    <h1>Contacts <span class="text-muted">({{ total }})</span></h1>
+    <div class="actions">
+        <a href="{{ url_for('contacts.groups') }}" class="btn btn-outline">Groupes</a>
+        <a href="{{ url_for('contacts.export', **request.args) }}" class="btn btn-outline">Exporter (CSV)</a>
+        <a href="{{ url_for('contacts.import_contacts') }}" class="btn btn-secondary">Importer un CSV</a>
+        <a href="{{ url_for('contacts.new', group=filters.group_id) }}" class="btn">+ Nouveau contact</a>
+    </div>
+</div>
+
+<form method="GET" class="card filters">
+    <input type="search" name="q" value="{{ filters.q }}" placeholder="Nom, numéro ou email" class="form-control" aria-label="Rechercher">
+    <select name="group" class="form-control" aria-label="Groupe">
+        <option value="">Tous les groupes</option>
+        {% for g in groups %}<option value="{{ g.id }}" {{ 'selected' if filters.group_id == g.id }}>{{ g.name }}</option>{% endfor %}
+    </select>
+    <select name="status" class="form-control" aria-label="Statut">
+        <option value="">Tous les statuts</option>
+        {% for key, label in status_filters.items() %}<option value="{{ key }}" {{ 'selected' if filters.status == key }}>{{ label }}</option>{% endfor %}
+    </select>
+    <select name="operator" class="form-control" aria-label="Opérateur">
+        <option value="">Tous les opérateurs</option>
+        {% for key, label in operator_labels.items() %}<option value="{{ key }}" {{ 'selected' if filters.operator == key }}>{{ label }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="btn btn-secondary">Filtrer</button>
+    {% if request.args %}<a href="{{ url_for('contacts.index') }}" class="btn btn-outline">Réinitialiser</a>{% endif %}
+</form>
+
+<div class="card">
+    {% if contacts %}
+    <form method="POST" action="{{ url_for('contacts.bulk') }}" id="bulk-form">
+        {{ bulk_form.hidden_tag() }}
+        <div class="bulk-bar">
+            <span class="text-muted">Pour les contacts cochés :</span>
+            {{ bulk_form.action(class="form-control") }}
+            {{ bulk_form.group_id(class="form-control") }}
+            <button type="submit" class="btn btn-sm btn-secondary"
+                    onclick="return document.getElementById('bulk-form').action.value !== 'delete' || confirm('Supprimer les contacts cochés ?');">Appliquer</button>
+        </div>
+        <table>
+            <thead><tr>
+                <th><input type="checkbox" aria-label="Tout cocher" onclick="document.querySelectorAll('input[name=contact_ids]').forEach(c => c.checked = this.checked)"></th>
+                <th>Nom</th><th>Téléphone</th><th>Opérateur</th><th>Groupes</th><th>Consentement</th><th>Statut</th><th></th>
+            </tr></thead>
+            <tbody>
+            {% for contact in contacts %}
+                <tr>
+                    <td><input type="checkbox" name="contact_ids" value="{{ contact.id }}" aria-label="Sélectionner {{ contact.full_name }}"></td>
+                    <td><a href="{{ url_for('contacts.edit', contact_id=contact.id) }}">{{ contact.full_name }}</a></td>
+                    <td class="nowrap">{{ contact.phone_display }}</td>
+                    <td>{{ contact.operator_label }}</td>
+                    <td>{{ contact.groups|map(attribute='name')|join(', ') or '—' }}</td>
+                    <td>{% if contact.consent_given %}Oui{% if contact.consent_given_at %} <span class="text-muted">({{ contact.consent_given_at.strftime('%d/%m/%Y') }})</span>{% endif %}{% else %}<span class="text-muted">Non</span>{% endif %}</td>
+                    <td>{% if contact.opted_out %}<span class="status-pill status-cancelled">Désabonné</span>{% elif contact.operator == 'fixe' %}<span class="status-pill status-draft" title="Les lignes fixes ne reçoivent pas de SMS">Fixe</span>{% else %}<span class="status-pill status-sent">Actif</span>{% endif %}</td>
+                    <td><a href="{{ url_for('contacts.edit', contact_id=contact.id) }}" class="btn btn-sm btn-outline">Modifier</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </form>
+    {% if pagination.pages > 1 %}
+    {% set args = request.args.to_dict() %}
+    <div class="mt-1">
+        {% if pagination.has_prev %}{% set _ = args.update(page=pagination.prev_num) %}<a href="{{ url_for('contacts.index', **args) }}">&laquo; Précédent</a>{% endif %}
+        <span class="text-muted"> Page {{ pagination.page }} / {{ pagination.pages }} </span>
+        {% if pagination.has_next %}{% set _ = args.update(page=pagination.next_num) %}<a href="{{ url_for('contacts.index', **args) }}">Suivant &raquo;</a>{% endif %}
+    </div>
+    {% endif %}
+    {% elif request.args %}
+        <p class="text-muted">Aucun contact ne correspond à ces filtres.</p>
+    {% else %}
+        <p class="text-muted">Aucun contact. <a href="{{ url_for('contacts.new') }}">Ajoutez-en un</a> ou <a href="{{ url_for('contacts.import_contacts') }}">importez un fichier CSV</a>.</p>
+    {% endif %}
+</div>
+{% endblock %}
