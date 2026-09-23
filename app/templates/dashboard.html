@@ -2,61 +2,189 @@
 {% from "_icons.html" import icon %}
 {% block title %}Tableau de bord{% endblock %}
 {% block content %}
-<h1>Tableau de bord</h1>
-<p>Bienvenue, <strong>{{ business.name }}</strong> !</p>
+<div class="flex-between">
+    <div>
+        <h1>Tableau de bord</h1>
+        <p class="text-muted">{{ business.name }}</p>
+    </div>
+    <a href="{{ url_for('campaigns.new') }}" class="btn">{{ icon('plus') }} Nouvelle campagne</a>
+</div>
+
+{% if low_balance %}
+<div class="alert alert-warning">
+    {{ icon('alert-triangle') }}
+    <span>Votre solde est faible ({{ business.credit_balance }} crédits). <a href="{{ url_for('billing.index') }}">Rechargez votre compte</a> pour continuer à envoyer des SMS.</span>
+</div>
+{% endif %}
+
+{% if not has_contacts or not has_campaigns %}
+<div class="card onboarding">
+    <h2>Bien démarrer</h2>
+    <ol>
+        <li class="{{ 'done' if has_contacts }}">{% if has_contacts %}{{ icon('check-circle') }}{% endif %}
+            <a href="{{ url_for('contacts.import_contacts') }}">Importez vos clients</a> (fichier CSV depuis Excel) ou <a href="{{ url_for('contacts.new') }}">ajoutez-les un par un</a>.</li>
+        <li>Rangez-les en <a href="{{ url_for('contacts.groups') }}">groupes</a> pour cibler vos envois (facultatif).</li>
+        <li class="{{ 'done' if has_campaigns }}">{% if has_campaigns %}{{ icon('check-circle') }}{% endif %}
+            <a href="{{ url_for('campaigns.new') }}">Créez votre première campagne</a> : vous verrez le coût exact avant d'envoyer.</li>
+    </ol>
+</div>
+{% endif %}
 
 <div class="grid grid-4 mb-2">
     <div class="card stat">
         <span class="stat-icon">{{ icon('wallet') }}</span>
-        <div class="value">{{ business.credit_balance }}</div>
+        <div class="value">{{ business.credit_balance|number }}</div>
         <div class="label">Crédits disponibles</div>
     </div>
     <div class="card stat">
         <span class="stat-icon">{{ icon('megaphone') }}</span>
-        <div class="value">{{ total_campaigns }}</div>
-        <div class="label">Campagnes créées</div>
-    </div>
-    <div class="card stat">
-        <span class="stat-icon">{{ icon('users') }}</span>
-        <div class="value">{{ total_contacts }}</div>
-        <div class="label">Contacts actifs</div>
+        <div class="value">{{ stats.sms_sent_month|number }}</div>
+        <div class="label">SMS envoyés ce mois</div>
     </div>
     <div class="card stat">
         <span class="stat-icon">{{ icon('chart') }}</span>
-        <div class="value">{{ average_open_rate }}%</div>
-        <div class="label">Taux de livraison moyen</div>
+        <div class="value">{{ stats.credits_used_month|number }}</div>
+        <div class="label">Crédits consommés ce mois</div>
+    </div>
+    <div class="card stat">
+        <span class="stat-icon">{{ icon('users') }}</span>
+        <div class="value">{{ stats.active_contacts|number }}</div>
+        <div class="label">Contacts actifs</div>
+        <div class="text-muted small">{{ stats.consenting_contacts|number }} avec consentement · {{ stats.opted_out_contacts|number }} désabonné(s)</div>
     </div>
 </div>
+
+<div class="grid dashboard-main">
+    <div class="card">
+        <h2>SMS envoyés — 30 derniers jours</h2>
+        {% if stats.daily_max %}
+        {% set W, H, left, right, top, plot_h = 720, 210, 44, 20, 10, 170 %}
+        {% set slot = (W - left - right) / stats.daily|length %}
+        {% set bar_w = [slot - 4, 24]|min %}
+        {% set y_max = ticks[-1] %}
+        <div class="chart" id="activity-chart">
+            <svg viewBox="0 0 {{ W }} {{ H + 22 }}" role="img" aria-labelledby="activity-title">
+                <title id="activity-title">Nombre de SMS envoyés par jour sur les 30 derniers jours</title>
+                {% for t in ticks %}
+                {% set y = top + plot_h * (1 - t / y_max) %}
+                <line x1="{{ left }}" x2="{{ W - right }}" y1="{{ y }}" y2="{{ y }}" class="grid-line"/>
+                <text x="{{ left - 8 }}" y="{{ y + 4 }}" class="axis-label" text-anchor="end">{{ t|number }}</text>
+                {% endfor %}
+                {% for day, n in stats.daily %}
+                {% set x = left + slot * loop.index0 + (slot - bar_w) / 2 %}
+                {% set h = plot_h * n / y_max %}
+                {% set base = top + plot_h %}
+                {% if n %}
+                {% set r = [4, h]|min %}
+                <path class="bar" d="M{{ x }},{{ base }} V{{ base - h + r }} Q{{ x }},{{ base - h }} {{ x + r }},{{ base - h }} H{{ x + bar_w - r }} Q{{ x + bar_w }},{{ base - h }} {{ x + bar_w }},{{ base - h + r }} V{{ base }} Z"/>
+                {% endif %}
+                <rect class="hit" x="{{ left + slot * loop.index0 }}" y="{{ top }}" width="{{ slot }}" height="{{ plot_h }}"
+                      data-label="{{ day.strftime('%d/%m') }}" data-value="{{ n }}"><title>{{ day.strftime('%d/%m') }} : {{ n }} SMS</title></rect>
+                {% if loop.index0 % 5 == 0 or loop.last %}
+                <text x="{{ left + slot * loop.index0 + slot / 2 }}" y="{{ H + 14 }}" class="axis-label" text-anchor="middle">{{ day.strftime('%d/%m') }}</text>
+                {% endif %}
+                {% endfor %}
+            </svg>
+            <div class="chart-tooltip" role="status" hidden></div>
+        </div>
+        <details class="mt-1">
+            <summary class="text-muted">Voir les données sous forme de tableau</summary>
+            <table>
+                <thead><tr><th>Jour</th><th>SMS envoyés</th></tr></thead>
+                <tbody>{% for day, n in stats.daily if n %}<tr><td>{{ day.strftime('%d/%m/%Y') }}</td><td>{{ n|number }}</td></tr>{% endfor %}</tbody>
+            </table>
+        </details>
+        {% else %}
+        <p class="text-muted">Aucun SMS envoyé ces 30 derniers jours.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Contacts par opérateur</h2>
+        {% if stats.operators %}
+        <ul class="hbars">
+            {% for label, n, pct in stats.operators %}
+            <li>
+                <div class="hbar-head"><span>{{ label }}</span><span class="text-muted">{{ n|number }} · {{ pct }} %</span></div>
+                <div class="hbar-track"><div class="hbar-fill" style="width: {{ [pct, 1]|max }}%"></div></div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Aucun contact pour le moment.</p>
+        {% endif %}
+        <h2 class="mt-2">Livraison</h2>
+        {% if stats.delivery_rate is not none %}
+        <p><strong>{{ stats.delivery_rate }} %</strong> des SMS suivis ont été livrés
+            ({{ stats.delivered|number }} livrés, {{ stats.undelivered|number }} non livrés).</p>
+        {% else %}
+        <p class="text-muted">Pas encore d'accusés de livraison : ils apparaissent quand votre fournisseur SMS les renvoie.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if drafts or upcoming %}
+<div class="card">
+    <h2>À suivre</h2>
+    <table>
+        <thead><tr><th>Campagne</th><th>Statut</th><th>Date</th><th></th></tr></thead>
+        <tbody>
+        {% for c in drafts %}
+        <tr><td>{{ c.name }}</td><td><span class="status-pill status-draft">{{ c.status|campaign_status }}</span></td>
+            <td class="text-muted">Pas encore confirmée</td>
+            <td><a href="{{ url_for('campaigns.confirm', campaign_id=c.id) }}" class="btn btn-sm">Finaliser</a></td></tr>
+        {% endfor %}
+        {% for c in upcoming %}
+        <tr><td>{{ c.name }}</td><td><span class="status-pill status-scheduled">{{ c.status|campaign_status }}</span></td>
+            <td>{{ c.scheduled_at.strftime('%d/%m/%Y à %H:%M') }}</td>
+            <td><a href="{{ url_for('campaigns.detail', campaign_id=c.id) }}" class="btn btn-sm btn-outline">Voir</a></td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
 
 <div class="card">
     <div class="flex-between">
         <h2>Campagnes récentes</h2>
-        <a href="{{ url_for('campaigns.new') }}" class="btn">{{ icon('plus') }} Nouvelle campagne</a>
+        <a href="{{ url_for('campaigns.index') }}">Toutes les campagnes &raquo;</a>
     </div>
-    {% if campaigns %}
+    {% if recent %}
     <table>
-        <thead><tr><th>Nom</th><th>Statut</th><th>Destinataires</th><th>Envoyés</th><th></th></tr></thead>
+        <thead><tr><th>Nom</th><th>Statut</th><th>Destinataires</th><th>Envoyés</th><th>Échecs</th><th></th></tr></thead>
         <tbody>
-        {% for campaign in campaigns %}
+        {% for campaign in recent %}
             <tr>
                 <td>{{ campaign.name }}</td>
-                <td><span class="status-pill status-{{ campaign.status }}">{{ campaign.status }}</span></td>
-                <td>{{ campaign.total_recipients }}</td>
-                <td>{{ campaign.total_sent }}</td>
+                <td><span class="status-pill status-{{ campaign.status }}">{{ campaign.status|campaign_status }}</span></td>
+                <td>{{ campaign.total_recipients|number }}</td>
+                <td>{{ campaign.total_sent|number }}</td>
+                <td>{{ campaign.total_failed|number }}</td>
                 <td><a href="{{ url_for('campaigns.detail', campaign_id=campaign.id) }}" class="btn btn-sm btn-outline">Voir</a></td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
     {% else %}
-        <p class="text-muted">Aucune campagne pour le moment.</p>
+        <p class="text-muted">Aucune campagne envoyée pour le moment.</p>
     {% endif %}
 </div>
 
-{% if business.credit_balance < 20 %}
-<div class="alert alert-warning">
-    {{ icon('alert-triangle') }}
-    <span>Votre solde de crédits est faible. <a href="{{ url_for('billing.index') }}">Rechargez votre compte</a> pour continuer à envoyer des SMS.</span>
-</div>
-{% endif %}
+<script>
+    (function () {
+        var chart = document.getElementById('activity-chart');
+        if (!chart) return;
+        var tip = chart.querySelector('.chart-tooltip');
+        chart.querySelectorAll('.hit').forEach(function (hit) {
+            hit.addEventListener('mouseenter', function () {
+                tip.textContent = hit.dataset.label + ' : ' + hit.dataset.value + ' SMS';
+                var box = hit.getBoundingClientRect(), outer = chart.getBoundingClientRect();
+                tip.style.left = (box.left - outer.left + box.width / 2) + 'px';
+                tip.hidden = false;
+                hit.classList.add('active');
+            });
+            hit.addEventListener('mouseleave', function () { tip.hidden = true; hit.classList.remove('active'); });
+        });
+    })();
+</script>
 {% endblock %}

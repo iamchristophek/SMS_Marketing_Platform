@@ -1,10 +1,10 @@
+from flask import current_app, render_template
 from flask_login import current_user, login_required
-
-from flask import render_template
 
 from app.blueprints.dashboard import dashboard_bp
 from app.models.campaign import Campaign
 from app.models.contact import Contact
+from app.services import stats_service
 
 
 @dashboard_bp.route("/")
@@ -16,29 +16,29 @@ def index():
 @login_required
 def home():
     business = current_user.business
-    campaigns = (
-        Campaign.query.filter_by(business_id=business.id)
+    campaigns = Campaign.query.filter_by(business_id=business.id)
+    recent = (
+        campaigns.filter(Campaign.status != Campaign.STATUS_DRAFT)
         .order_by(Campaign.created_at.desc())
         .limit(5)
         .all()
     )
-    total_campaigns = Campaign.query.filter_by(business_id=business.id).count()
-    total_contacts = Contact.query.filter_by(business_id=business.id, opted_out=False).count()
-
-    sent_campaigns = [c for c in Campaign.query.filter_by(business_id=business.id) if c.total_sent > 0]
-    if sent_campaigns:
-        average_open_rate = round(sum(c.open_rate for c in sent_campaigns) / len(sent_campaigns), 1)
-    else:
-        average_open_rate = 0
-
-    monthly_messages = sum(c.total_sent for c in Campaign.query.filter_by(business_id=business.id))
+    drafts = campaigns.filter_by(status=Campaign.STATUS_DRAFT).order_by(Campaign.created_at.desc()).all()
+    upcoming = (
+        campaigns.filter_by(status=Campaign.STATUS_SCHEDULED).order_by(Campaign.scheduled_at).limit(5).all()
+    )
+    stats = stats_service.dashboard_stats(business.id)
+    has_contacts = Contact.query.filter_by(business_id=business.id).first() is not None
 
     return render_template(
         "dashboard.html",
         business=business,
-        campaigns=campaigns,
-        total_campaigns=total_campaigns,
-        total_contacts=total_contacts,
-        monthly_messages=monthly_messages,
-        average_open_rate=average_open_rate,
+        stats=stats,
+        ticks=stats_service.nice_ticks(stats.daily_max),
+        recent=recent,
+        drafts=drafts,
+        upcoming=upcoming,
+        has_contacts=has_contacts,
+        has_campaigns=bool(recent or drafts or upcoming),
+        low_balance=business.credit_balance < current_app.config["LOW_BALANCE_THRESHOLD"],
     )

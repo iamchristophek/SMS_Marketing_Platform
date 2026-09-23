@@ -87,11 +87,11 @@ Gunicorn, worker et beat Celery, navigateur Chromium.
 - [x] Personnalisation `{prenom}` / `{nom}` dans le message
 
 ### Tableau de bord et statistiques
-- [ ] SMS envoyés ce mois-ci et crédits consommés ce mois-ci
-- [ ] Activité des 30 derniers jours (envois par jour)
-- [ ] Répartition des contacts et des envois par opérateur *(repris de `main`)*
-- [ ] Taux de livraison affiché seulement quand des accusés de livraison existent
-- [ ] Seuil d'alerte de solde faible configurable
+- [x] SMS envoyés ce mois-ci et crédits consommés ce mois-ci
+- [x] Activité des 30 derniers jours (envois par jour)
+- [x] Répartition des contacts par opérateur *(repris de `main`)*
+- [x] Taux de livraison affiché seulement quand des accusés de livraison existent
+- [x] Seuil d'alerte de solde faible configurable
 
 ### Compte
 - [ ] Page « Mon compte » : entreprise (nom, secteur, ville, téléphone) et utilisateur
@@ -130,6 +130,8 @@ Gunicorn, worker et beat Celery, navigateur Chromium.
   la réservation des crédits ; validation désormais faite avant toute écriture.
 - [x] Annuler une campagne planifiée (crédits rendus) et dupliquer une campagne
 - [x] Import CSV : séparateur point-virgule (Excel en français) détecté automatiquement
+- [x] Tableau de bord : « Bien démarrer » pour un nouveau client, campagnes à
+  finaliser et planifiées, affichage mobile sans débordement horizontal
 
 ## P1 — Sécurité et exploitation
 

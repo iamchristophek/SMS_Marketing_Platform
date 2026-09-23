@@ -361,3 +361,33 @@ form.inline { display: inline; }
 .msg-failed, .msg-undelivered { background: var(--color-error-bg); color: var(--color-error-text); }
 .msg-pending { background: var(--color-neutral-100); color: var(--color-neutral-600); }
 .btn[disabled] { opacity: .5; cursor: not-allowed; }
+
+/* Tableau de bord */
+.small { font-size: var(--text-xs); }
+.dashboard-main { grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); }
+@media (max-width: 900px) { .dashboard-main { grid-template-columns: minmax(0, 1fr); } }
+.dashboard-main > .card { min-width: 0; }
+.onboarding ol { margin: 0; padding-left: var(--space-5); }
+.onboarding li { margin: var(--space-2) 0; }
+.onboarding li.done { color: var(--color-neutral-500); }
+.onboarding li.done .icon { color: var(--color-success-text); }
+.chart { position: relative; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart .grid-line { stroke: var(--color-neutral-100); stroke-width: 1; }
+.chart .axis-label { fill: var(--color-neutral-500); font-size: 11px; }
+.chart .bar { fill: var(--color-primary-500); pointer-events: none; }
+.chart .hit { fill: transparent; cursor: default; }
+.chart .hit.active { fill: rgba(23, 28, 33, 0.04); }
+.chart-tooltip { position: absolute; top: 0; transform: translate(-50%, -110%); background: var(--color-neutral-900); color: var(--color-neutral-0); font-size: var(--text-xs); padding: 4px 8px; border-radius: var(--radius-sm); white-space: nowrap; pointer-events: none; }
+.hbars { list-style: none; margin: 0; padding: 0; }
+.hbars li { margin-bottom: var(--space-3); }
+.hbar-head { display: flex; justify-content: space-between; font-size: var(--text-sm); margin-bottom: 4px; }
+.hbar-track { height: 10px; background: var(--color-primary-50); border-radius: var(--radius-pill); }
+.hbar-fill { height: 10px; background: var(--color-primary-500); border-radius: var(--radius-pill); }
+@media (max-width: 600px) {
+    .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+    .grid-4 .card { padding: var(--space-4); margin-bottom: 0; }
+    .stat .value { font-size: var(--text-xl); }
+    .chart { overflow-x: auto; }
+    .chart svg { min-width: 560px; }
+}
