@@ -24,3 +24,9 @@ class PaymentProvider(ABC):
         """Interroge le fournisseur pour l'état réel d'une transaction.
         Retourne 'success', 'failed' ou 'pending'."""
         return "pending"
+
+    def verify_notification_signature(self, payload: dict, received_token: str) -> bool:
+        """Vérifie l'authenticité d'une notification webhook entrante.
+        Par défaut (fournisseur sans mécanisme de signature, ex. paiement
+        manuel en dev) : aucune vérification disponible, on laisse passer."""
+        return True

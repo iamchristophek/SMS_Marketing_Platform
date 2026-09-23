@@ -1,10 +1,10 @@
-# PME SMS
+# Baoryx Connect
 
 Plateforme SaaS de marketing par SMS destinée aux PME/PMI de Côte d'Ivoire.
 
 ## 1. Présentation
 
-PME SMS permet à une entreprise (boutique, restaurant, cabinet, distributeur…) de :
+Baoryx Connect permet à une entreprise (boutique, restaurant, cabinet, distributeur…) de :
 
 - gérer son fichier clients (contacts et groupes) ;
 - envoyer des campagnes SMS, tout de suite ou à une date planifiée ;
@@ -132,7 +132,7 @@ cp .env.example .env
 FLASK_ENV=development
 SESSION_COOKIE_SECURE=false        # sinon la session ne fonctionne pas en http://
 # Commentez ces lignes : en local, SQLite est utilisé par défaut (instance/sms_marketing.db)
-# DATABASE_URL=postgresql://pmesms:pmesms@db:5432/pmesms
+# DATABASE_URL=postgresql://baoryx:baoryx@db:5432/baoryx
 # CELERY_BROKER_URL=...
 # CELERY_RESULT_BACKEND=...
 ```
@@ -188,7 +188,7 @@ Toutes les variables sont lues dans `app/config.py`. Le profil est choisi par `F
 | `CELERY_RESULT_BACKEND` | Backend de résultats Celery | `redis://localhost:6379/1` |
 | `CELERY_TASK_ALWAYS_EAGER` | Exécute les tâches de façon synchrone, sans worker | `true` (dev), `false` (prod) |
 | `SMS_PROVIDER` | `console`, `africastalking`, `orange` ou `twilio` | `console` |
-| `SMS_SENDER_ID` | Nom d'expéditeur (sender ID) affiché sur les SMS | `PMEPMI` |
+| `SMS_SENDER_ID` | Nom d'expéditeur (sender ID) affiché sur les SMS | `BAORYX` |
 | `SMS_COST_CREDITS` | Crédits consommés par segment SMS | `1` |
 | `SMS_MAX_PER_MESSAGE_SEGMENTS` | Lu dans la configuration mais **pas encore utilisé** par le code | `3` |
 | `FREE_TRIAL_CREDITS` | Crédits offerts à l'inscription et par `create-admin` | `20` |
@@ -197,8 +197,8 @@ Toutes les variables sont lues dans `app/config.py`. Le profil est choisi par `F
 | `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_FROM_NUMBER` | Identifiants Twilio | — |
 | `PAYMENT_PROVIDER` | `manual` ou `cinetpay` | `manual` |
 | `CINETPAY_API_KEY` / `CINETPAY_SITE_ID` | Identifiants CinetPay | — |
-| `CINETPAY_SECRET_KEY` | Lu et transmis au fournisseur, mais **pas encore utilisé** (pas de vérification de signature) | — |
-| `MAIL_SUPPORT_ADDRESS` | Adresse de support. Lue dans la configuration mais **pas encore utilisée** | `support@pmesms.ci` |
+| `CINETPAY_SECRET_KEY` | Clé secrète marchande CinetPay, utilisée pour vérifier la signature HMAC (`X-TOKEN`) des notifications de paiement. Obligatoire avec `cinetpay` : sans elle, toutes les notifications sont rejetées | — |
+| `MAIL_SUPPORT_ADDRESS` | Adresse de support. Lue dans la configuration mais **pas encore utilisée** | `support@baoryx.ci` |
 
 Certaines valeurs sont fixes dans le code et ne sont pas configurables par variable d'environnement : sessions de 12 h, JWT d'accès valable 1 h, JWT de rafraîchissement valable 30 jours, indicatif par défaut `225` et `PREFERRED_URL_SCHEME=https`.
 
@@ -242,7 +242,7 @@ Préfixe : `/api/v1`. Les réponses sont en JSON, y compris les erreurs (`{"erro
 
 Deux mécanismes sont acceptés sur les routes protégées. Ils sont essayés dans cet ordre :
 
-1. **Clé d'API** : en-tête `X-API-Key: pmesms_...`. Elle est destinée aux intégrations serveur à serveur. La clé est créée par un utilisateur connecté à l'interface web avec `POST /api/v1/api-keys` (session et jeton CSRF requis). Sa valeur en clair n'est affichée qu'une seule fois. Il n'existe pas encore d'écran dédié dans l'interface.
+1. **Clé d'API** : en-tête `X-API-Key: baoryx_...`. Elle est destinée aux intégrations serveur à serveur. La clé est créée par un utilisateur connecté à l'interface web avec `POST /api/v1/api-keys` (session et jeton CSRF requis). Sa valeur en clair n'est affichée qu'une seule fois. Il n'existe pas encore d'écran dédié dans l'interface.
 2. **JWT** : en-tête `Authorization: Bearer <access_token>`.
 
 ```bash
@@ -281,7 +281,7 @@ Hors préfixe, `GET /healthz` renvoie `{"status": "ok"}`.
 ```bash
 # Envoyer un SMS (confirmation de commande, par exemple)
 curl -X POST https://<domaine>/api/v1/sms/send \
-  -H "X-API-Key: pmesms_xxxxxxxxxxxxxxxx" \
+  -H "X-API-Key: baoryx_xxxxxxxxxxxxxxxx" \
   -H "Content-Type: application/json" \
   -d '{"to": "07 12 34 56 78", "message": "Votre commande #1234 est prête. Merci !"}'
 # → 201 {"id": 42, "status": "sent", "provider_message_id": "...", "credits_used": 1, "error": null}
@@ -320,7 +320,7 @@ Points à connaître :
 - **Migrations.** Le schéma est géré par Flask-Migrate / Alembic (dossier `migrations/`, versionné). Après une modification des modèles : `flask db migrate -m "description"`, relire le fichier généré, puis `flask db upgrade`.
 - **Packs de crédits.** Il n'existe pas encore d'interface d'administration. Les packs sont créés par `flask seed-demo`, qui crée aussi le compte `demo`, ou directement en base. Supprimez ou désactivez le compte `demo` en production.
 - **HTTPS et reverse proxy.** `SESSION_COOKIE_SECURE=true` par défaut : il faut servir l'application en HTTPS derrière un reverse proxy (Nginx, Caddy, Traefik) qui termine le TLS et redirige vers `web:8000`. En HTTP simple, la connexion ne fonctionne pas. L'application ne configure pas encore `ProxyFix` (voir la checklist).
-- **Mot de passe PostgreSQL.** Les identifiants PostgreSQL (`pmesms`/`pmesms`) sont écrits en dur dans `docker-compose.yml`. Changez-les et gardez `DATABASE_URL` cohérent.
+- **Mot de passe PostgreSQL.** Les identifiants PostgreSQL (`baoryx`/`baoryx`) sont écrits en dur dans `docker-compose.yml`. Changez-les et gardez `DATABASE_URL` cohérent.
 - **Rate limiting partagé.** Définissez `RATELIMIT_STORAGE_URI=redis://redis:6379/2`. Sinon, chaque worker Gunicorn garde ses propres compteurs en mémoire.
 - **Montée en charge des envois.** Augmentez le nombre de workers Celery avec `docker compose up -d --scale worker=3` ou via `--concurrency`. Ne lancez qu'**une seule** instance de `beat`, sinon les campagnes planifiées sont mises en file plusieurs fois.
 - **Montée en charge du web.** Gunicorn démarre `2 × CPU + 1` workers synchrones (`gunicorn.conf.py`).
@@ -337,7 +337,7 @@ Ce qui reste à faire ou à valider avant un vrai lancement en Côte d'Ivoire. C
 - [ ] Mettre en place les mentions et règles anti-spam : plages horaires d'envoi, mention « STOP » dans les messages.
 
 **Sécurité**
-- [ ] **Vérifier la signature des webhooks : ce n'est pas implémenté.** Le callback de paiement revérifie bien le statut auprès du fournisseur avant de créditer le compte. En revanche, `/webhooks/sms/delivery-report` et `/webhooks/sms/inbound` ne sont **pas authentifiés**. N'importe qui peut marquer des messages comme livrés ou désabonner des numéros. `CINETPAY_SECRET_KEY` n'est pas utilisé.
+- [ ] **Authentifier les webhooks SMS.** Le callback de paiement CinetPay vérifie la signature HMAC (`X-TOKEN`, avec `CINETPAY_SECRET_KEY`) puis revérifie le statut auprès du fournisseur avant de créditer le compte. En revanche, `/webhooks/sms/delivery-report` et `/webhooks/sms/inbound` ne sont **pas authentifiés** : n'importe qui peut marquer des messages comme livrés ou désabonner des numéros.
 - [ ] Ajouter `werkzeug.middleware.proxy_fix.ProxyFix` derrière le reverse proxy. Sans lui, le rate limiting voit l'IP du proxy pour tout le monde, et la `notify_url` envoyée à CinetPay risque d'avoir un mauvais schéma ou un mauvais hôte.
 - [ ] Limiter la taille des uploads (`MAX_CONTENT_LENGTH` n'est pas défini) pour l'import CSV.
 - [ ] Changer les identifiants PostgreSQL par défaut et ne pas exposer PostgreSQL ni Redis.
@@ -351,7 +351,7 @@ Ce qui reste à faire ou à valider avant un vrai lancement en Côte d'Ivoire. C
 - [ ] Accusés de livraison : seul le format d'Africa's Talking (`id`, `status`) est géré. Ceux de Twilio (`MessageSid`, `MessageStatus`) et d'Orange ne sont pas interprétés.
 
 **Exploitation**
-- [ ] **Sauvegardes PostgreSQL** automatisées (volume `pmesms_db_data`), avec rétention et test de restauration.
+- [ ] **Sauvegardes PostgreSQL** automatisées (volume `baoryx_db_data`), avec rétention et test de restauration.
 - [ ] **Monitoring et logs** : il n'y a pour l'instant que les logs stdout de Gunicorn et Celery. Prévoir une centralisation des logs, un suivi des erreurs (Sentry par exemple), des métriques et des alertes sur les files Celery et sur les échecs d'envoi.
 - [ ] **Tests de charge** : envoi de campagnes de plusieurs milliers de destinataires (l'envoi est séquentiel, un appel HTTP par SMS) et débit maximal autorisé par l'agrégateur.
 - [ ] Recette de bout en bout avec de vrais numéros ivoiriens (Orange, MTN, Moov) et de vrais paiements Mobile Money en environnement de test CinetPay.

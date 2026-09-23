@@ -1,23 +1,28 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon %}
 {% block title %}Tableau de bord{% endblock %}
 {% block content %}
 <h1>Tableau de bord</h1>
 <p>Bienvenue, <strong>{{ business.name }}</strong> !</p>
 
-<div class="grid grid-4 mb-1">
+<div class="grid grid-4 mb-2">
     <div class="card stat">
+        <span class="stat-icon">{{ icon('wallet') }}</span>
         <div class="value">{{ business.credit_balance }}</div>
         <div class="label">Crédits disponibles</div>
     </div>
     <div class="card stat">
+        <span class="stat-icon">{{ icon('megaphone') }}</span>
         <div class="value">{{ total_campaigns }}</div>
         <div class="label">Campagnes créées</div>
     </div>
     <div class="card stat">
+        <span class="stat-icon">{{ icon('users') }}</span>
         <div class="value">{{ total_contacts }}</div>
         <div class="label">Contacts actifs</div>
     </div>
     <div class="card stat">
+        <span class="stat-icon">{{ icon('chart') }}</span>
         <div class="value">{{ average_open_rate }}%</div>
         <div class="label">Taux de livraison moyen</div>
     </div>
@@ -26,7 +31,7 @@
 <div class="card">
     <div class="flex-between">
         <h2>Campagnes récentes</h2>
-        <a href="{{ url_for('campaigns.new') }}" class="btn">+ Nouvelle campagne</a>
+        <a href="{{ url_for('campaigns.new') }}" class="btn">{{ icon('plus') }} Nouvelle campagne</a>
     </div>
     {% if campaigns %}
     <table>
@@ -49,8 +54,9 @@
 </div>
 
 {% if business.credit_balance < 20 %}
-<div class="card">
-    <p>⚠️ Votre solde de crédits est faible. <a href="{{ url_for('billing.index') }}">Rechargez votre compte</a> pour continuer à envoyer des SMS.</p>
+<div class="alert alert-warning">
+    {{ icon('alert-triangle') }}
+    <span>Votre solde de crédits est faible. <a href="{{ url_for('billing.index') }}">Rechargez votre compte</a> pour continuer à envoyer des SMS.</span>
 </div>
 {% endif %}
 {% endblock %}

@@ -66,7 +66,7 @@ class BaseConfig:
     # --- Fournisseur SMS ---
     # Valeurs possibles : console (dev/local), africastalking, orange, twilio
     SMS_PROVIDER = os.environ.get("SMS_PROVIDER", "console")
-    SMS_SENDER_ID = os.environ.get("SMS_SENDER_ID", "PMEPMI")
+    SMS_SENDER_ID = os.environ.get("SMS_SENDER_ID", "BAORYX")
     SMS_MAX_PER_MESSAGE_SEGMENTS = int(os.environ.get("SMS_MAX_PER_MESSAGE_SEGMENTS", 3))
 
     AT_USERNAME = os.environ.get("AFRICASTALKING_USERNAME")
@@ -85,6 +85,7 @@ class BaseConfig:
     CINETPAY_API_KEY = os.environ.get("CINETPAY_API_KEY")
     CINETPAY_SITE_ID = os.environ.get("CINETPAY_SITE_ID")
     CINETPAY_SECRET_KEY = os.environ.get("CINETPAY_SECRET_KEY")
+    PAYMENT_RECONCILE_AFTER_MINUTES = int(os.environ.get("PAYMENT_RECONCILE_AFTER_MINUTES", 15))
 
     # --- Crédits / tarification ---
     SMS_COST_CREDITS = int(os.environ.get("SMS_COST_CREDITS", 1))
@@ -92,7 +93,7 @@ class BaseConfig:
 
     # --- Divers ---
     DEFAULT_COUNTRY_CODE = "225"  # Côte d'Ivoire
-    MAIL_SUPPORT_ADDRESS = os.environ.get("MAIL_SUPPORT_ADDRESS", "support@pmesms.ci")
+    MAIL_SUPPORT_ADDRESS = os.environ.get("MAIL_SUPPORT_ADDRESS", "support@baoryx.ci")
     PREFERRED_URL_SCHEME = "https"
 
     @staticmethod

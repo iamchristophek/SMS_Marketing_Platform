@@ -22,7 +22,7 @@ class ApiKey(db.Model):
     business_id = db.Column(db.Integer, db.ForeignKey("businesses.id"), nullable=False, index=True)
 
     name = db.Column(db.String(80), nullable=False)
-    key_prefix = db.Column(db.String(20), nullable=False)  # « pmesms_ » + 7 caractères
+    key_prefix = db.Column(db.String(20), nullable=False)  # « baoryx_ » + 7 caractères
     key_hash = db.Column(db.String(64), nullable=False, unique=True, index=True)
 
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
@@ -38,7 +38,7 @@ class ApiKey(db.Model):
     @classmethod
     def generate(cls, business_id, name):
         """Génère une nouvelle clé. Retourne (instance, valeur_en_clair)."""
-        raw_key = f"pmesms_{secrets.token_urlsafe(32)}"
+        raw_key = f"baoryx_{secrets.token_urlsafe(32)}"
         instance = cls(
             business_id=business_id,
             name=name,
