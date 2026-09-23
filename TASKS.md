@@ -19,7 +19,7 @@ Légende des priorités :
 - [x] Envoi asynchrone Celery : reprise sans double envoi, remboursement en cas d'échec final
 - [x] API REST v1 (JWT et clé API), webhooks de livraison, STOP et paiement
 - [x] Docker Compose : web, worker, beat, PostgreSQL, Redis
-- [x] Suite de tests (85 tests), vérifiée aussi sur PostgreSQL
+- [x] Suite de tests (85 tests à la PR #1, 187 aujourd'hui), vérifiée aussi sur PostgreSQL
 - [x] README en français
 - [x] Fusion de `main` : l'ancien prototype est retiré, ses fonctions sont reprises ci-dessous
 
@@ -169,7 +169,10 @@ Gunicorn, worker et beat Celery, navigateur Chromium.
 - [ ] Back-office d'administration web (entreprises, paiements, support)
 - [ ] Comptes collaborateurs (`staff`) : invitation et droits
 - [ ] Accusés de livraison Twilio (`MessageSid`/`MessageStatus`) et Orange
-- [ ] Envoi par lots pour les grosses campagnes (aujourd'hui un appel HTTP par SMS, sauf Africa's Talking)
+- [ ] Envoi par lots pour les grosses campagnes : le fournisseur Africa's Talking sait
+  envoyer par paquets de 200 (`send_bulk`), mais `campaign_service` n'utilise
+  encore que `send` (un appel HTTP par SMS). Nécessaire au-delà de quelques
+  milliers de destinataires.
 - [ ] Monitoring (Sentry), sauvegardes PostgreSQL, tests de charge
 - [ ] Conformité ARTCI (loi n°2013-450) : déclaration, CGU, politique de confidentialité
 - [ ] `scripts/migrate_legacy_data.py` : vérifier la compatibilité avec le
