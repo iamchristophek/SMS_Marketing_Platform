@@ -14,3 +14,5 @@ build/
 *.sqlite3
 .vscode/
 .idea/
+# Sauvegardes Redis locales
+dump.rdb
