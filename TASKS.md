@@ -135,11 +135,17 @@ Gunicorn, worker et beat Celery, navigateur Chromium.
 
 ## P1 — Sécurité et exploitation
 
-- [ ] Authentifier les webhooks SMS (jeton secret dans l'URL de callback)
-- [ ] Limiter la taille des uploads (`MAX_CONTENT_LENGTH`) pour l'import CSV
+- [x] Authentifier les webhooks SMS (jeton secret dans l'URL de callback)
+- [x] Limiter la taille des uploads (`MAX_CONTENT_LENGTH`) pour l'import CSV
 - [x] `RATELIMIT_STORAGE_URI` sur Redis dans `docker-compose.yml`
 - [x] Identifiants PostgreSQL lus depuis `.env` au lieu d'être écrits en dur dans `docker-compose.yml`
 - [x] Profil production : refuser les `SECRET_KEY` d'exemple de `.env.example`
+
+- [x] Production : refuse de démarrer avec un vrai fournisseur SMS sans `SMS_WEBHOOK_TOKEN`
+- [ ] Désabonnement STOP : avec un expéditeur (sender ID) partagé, un STOP
+  désabonne le numéro chez **toutes** les entreprises clientes, faute de savoir
+  à laquelle il répond. Acceptable tant que l'expéditeur est commun ; à revoir
+  si chaque entreprise obtient son propre sender ID.
 
 ## P2 — Reporté ou plus tard
 

@@ -71,6 +71,10 @@ class BaseConfig:
     SMS_PROVIDER = os.environ.get("SMS_PROVIDER", "console")
     SMS_SENDER_ID = os.environ.get("SMS_SENDER_ID", "BAORYX")
     SMS_MAX_PER_MESSAGE_SEGMENTS = int(os.environ.get("SMS_MAX_PER_MESSAGE_SEGMENTS", 3))
+    # Jeton secret à ajouter aux URL de callback configurées chez le
+    # fournisseur SMS (?token=...) : sans lui, n'importe qui pourrait marquer
+    # des SMS comme livrés ou désabonner des numéros.
+    SMS_WEBHOOK_TOKEN = os.environ.get("SMS_WEBHOOK_TOKEN", "")
 
     AT_USERNAME = os.environ.get("AFRICASTALKING_USERNAME")
     AT_API_KEY = os.environ.get("AFRICASTALKING_API_KEY")
@@ -108,6 +112,8 @@ class BaseConfig:
     DEFAULT_COUNTRY_CODE = "225"  # Côte d'Ivoire
     MAIL_SUPPORT_ADDRESS = os.environ.get("MAIL_SUPPORT_ADDRESS", "support@baoryx.ci")
     PREFERRED_URL_SCHEME = "https"
+    # Import CSV : 5 Mo suffisent pour ~100 000 contacts.
+    MAX_CONTENT_LENGTH = int(os.environ.get("MAX_UPLOAD_MB", 5)) * 1024 * 1024
 
     @staticmethod
     def init_app(app):
@@ -154,6 +160,13 @@ class ProductionConfig(BaseConfig):
                     "moins 32 caractères (pas la valeur d'exemple de .env.example). "
                     'Générez-la avec : python -c "import secrets; print(secrets.token_urlsafe(64))"'
                 )
+        if app.config.get("SMS_PROVIDER", "console") != "console" and len(
+            app.config.get("SMS_WEBHOOK_TOKEN") or ""
+        ) < 16:
+            raise RuntimeError(
+                "SMS_WEBHOOK_TOKEN (16 caractères minimum) est obligatoire avec un vrai fournisseur SMS : "
+                "il protège les URL d'accusés de livraison et de désabonnement (STOP)."
+            )
         if app.config.get("MANUAL_PAYMENT_AUTO_APPROVE"):
             raise RuntimeError(
                 "MANUAL_PAYMENT_AUTO_APPROVE crédite gratuitement tout achat : interdit en production."

@@ -126,6 +126,14 @@ def _register_error_handlers(app):
             return jsonify(error="Trop de requêtes, réessayez plus tard"), 429
         return render_template("errors/429.html"), 429
 
+    @app.errorhandler(413)
+    def too_large(error):
+        limit_mb = app.config.get("MAX_CONTENT_LENGTH", 0) // (1024 * 1024)
+        message = f"Fichier trop volumineux (maximum {limit_mb} Mo)."
+        if wants_json():
+            return jsonify(error=message), 413
+        return render_template("errors/413.html", message=message), 413
+
     @app.errorhandler(CSRFError)
     def csrf_error(error):
         # Sans ce gestionnaire, Flask-WTF renvoie une page 400 anglaise

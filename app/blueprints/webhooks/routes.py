@@ -1,4 +1,6 @@
+import hmac
 from datetime import datetime, timezone
+from functools import wraps
 
 from flask import current_app, jsonify, request
 
@@ -16,7 +18,30 @@ def utcnow():
     return datetime.now(timezone.utc)
 
 
+def sms_webhook_token_required(view):
+    """Les callbacks SMS n'ont pas de signature standard entre fournisseurs :
+    on exige un jeton secret dans l'URL configurée chez le fournisseur
+    (…/webhooks/sms/delivery-report?token=XXX). Sans jeton configuré, les
+    callbacks ne sont acceptés qu'en développement et en test."""
+
+    @wraps(view)
+    def wrapper(*args, **kwargs):
+        expected = current_app.config.get("SMS_WEBHOOK_TOKEN") or ""
+        received = request.args.get("token") or request.headers.get("X-Webhook-Token") or ""
+        if expected:
+            if not hmac.compare_digest(received.encode(), expected.encode()):
+                current_app.logger.warning("Webhook SMS refusé : jeton invalide (%s)", request.path)
+                return jsonify(error="jeton invalide"), 403
+        elif not (current_app.debug or current_app.testing):
+            current_app.logger.error("Webhook SMS refusé : SMS_WEBHOOK_TOKEN non configuré")
+            return jsonify(error="webhook non configuré"), 403
+        return view(*args, **kwargs)
+
+    return wrapper
+
+
 @webhooks_bp.route("/sms/delivery-report", methods=["POST"])
+@sms_webhook_token_required
 def sms_delivery_report():
     """Callback appelé par le fournisseur SMS lorsqu'un message est
     effectivement livré au téléphone du destinataire (ou a échoué en
@@ -52,6 +77,7 @@ def sms_delivery_report():
 
 
 @webhooks_bp.route("/sms/inbound", methods=["POST"])
+@sms_webhook_token_required
 def sms_inbound():
     """Callback pour les SMS entrants (réponse d'un destinataire). Gère en
     particulier le mot-clé STOP pour le désabonnement, requis par les
