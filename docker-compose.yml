@@ -1,15 +1,34 @@
+# Les variables ${...} sont lues dans le fichier .env (à côté de ce fichier).
+x-app-env: &app-env
+  FLASK_ENV: production
+  # Construite ici à partir des mêmes variables que le service db : impossible
+  # d'avoir un mot de passe différent entre PostgreSQL et l'application.
+  DATABASE_URL: postgresql://${POSTGRES_USER:-baoryx}:${POSTGRES_PASSWORD:?Définissez POSTGRES_PASSWORD dans .env}@db:5432/${POSTGRES_DB:-baoryx}
+  CELERY_BROKER_URL: redis://redis:6379/0
+  CELERY_RESULT_BACKEND: redis://redis:6379/1
+  # Compteurs de rate limiting partagés entre tous les workers Gunicorn.
+  RATELIMIT_STORAGE_URI: redis://redis:6379/2
+  # L'application est derrière un seul reverse proxy : Caddy.
+  PROXY_FIX_COUNT: "1"
+
+x-app-depends: &app-depends
+  db:
+    condition: service_healthy
+  redis:
+    condition: service_healthy
+
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: baoryx
-      POSTGRES_PASSWORD: baoryx
-      POSTGRES_DB: baoryx
+      POSTGRES_USER: ${POSTGRES_USER:-baoryx}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Définissez POSTGRES_PASSWORD dans .env}
+      POSTGRES_DB: ${POSTGRES_DB:-baoryx}
     volumes:
       - baoryx_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U baoryx"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-baoryx}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -27,15 +46,11 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
-    environment:
-      FLASK_ENV: production
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    ports:
-      - "8000:8000"
+    environment: *app-env
+    depends_on: *app-depends
+    # Pas de port publié : seul Caddy (HTTPS) est exposé sur Internet.
+    expose:
+      - "8000"
     command: >
       sh -c "flask db upgrade && gunicorn -c gunicorn.conf.py wsgi:app"
 
@@ -43,27 +58,39 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
-    environment:
-      FLASK_ENV: production
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    environment: *app-env
+    depends_on: *app-depends
     command: celery -A celery_worker.celery worker --loglevel=info --concurrency=2
 
   beat:
     build: .
     restart: unless-stopped
     env_file: .env
-    environment:
-      FLASK_ENV: production
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    environment: *app-env
+    depends_on: *app-depends
     command: celery -A celery_worker.celery beat --loglevel=info
+
+  # Reverse proxy HTTPS. Avec DOMAIN=un vrai nom de domaine pointant vers le
+  # serveur, Caddy obtient et renouvelle seul un certificat Let's Encrypt.
+  # Avec DOMAIN=une adresse IP, il utilise un certificat interne (le
+  # navigateur affiche un avertissement à accepter une fois) : suffisant pour
+  # un test, pas pour des clients.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?Définissez DOMAIN dans .env (nom de domaine ou IP du serveur)}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
 
 volumes:
   baoryx_db_data:
+  caddy_data:
+  caddy_config:

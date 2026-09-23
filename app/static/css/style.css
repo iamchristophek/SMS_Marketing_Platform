@@ -328,3 +328,7 @@ footer {
     nav ul { justify-content: center; }
     .hero { padding: var(--space-6) var(--space-3); }
 }
+
+/* Résumé des erreurs de formulaire (base.html) */
+.form-errors { margin: var(--space-1) 0 0; padding-left: var(--space-5); }
+.form-errors li { margin: 2px 0; }

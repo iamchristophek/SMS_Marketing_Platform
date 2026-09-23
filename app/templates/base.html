@@ -37,6 +37,32 @@
     </header>
 
     <div class="container">
+        {% if insecure_transport %}
+        <div class="alert alert-error">
+            {{ icon('alert-triangle') }}
+            <span><strong>Connexion non sécurisée.</strong> Ce serveur exige HTTPS pour la connexion :
+            ouvrez-le avec une adresse <code>https://</code>. Sans cela, l'inscription et la connexion
+            échoueront. (Pour un test local sans certificat uniquement, l'administrateur peut définir
+            <code>SESSION_COOKIE_SECURE=false</code>.)</span>
+        </div>
+        {% endif %}
+
+        {% if form is defined and form.errors %}
+        <div class="alert alert-error" role="alert">
+            {{ icon('alert-triangle') }}
+            <div>
+                <strong>Le formulaire contient des erreurs :</strong>
+                <ul class="form-errors">
+                {% for field_name, errors in form.errors.items() %}
+                    {% for error in errors %}
+                    <li>{% if form[field_name] is defined and form[field_name].label %}{{ form[field_name].label.text }} : {% endif %}{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}

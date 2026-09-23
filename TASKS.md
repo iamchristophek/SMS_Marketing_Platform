@@ -30,17 +30,17 @@ Légende des priorités :
 Test de bout en bout du 23/09/2026 : profil `production`, PostgreSQL, Redis,
 Gunicorn, worker et beat Celery, navigateur Chromium.
 
-- [ ] **Connexion impossible en HTTP.** Si l'application est ouverte par
+- [x] **Connexion impossible en HTTP.** Si l'application est ouverte par
   `http://IP:8000` (tout test sans certificat), le cookie de session
   `Secure` n'est jamais renvoyé par le navigateur. La vérification CSRF
   échoue alors et l'inscription comme la connexion réaffichent le
   formulaire **sans aucun message**. C'est très probablement le blocage
   constaté avec le premier client.
-  - [ ] Afficher une erreur explicite quand le jeton CSRF ou la session manque
-  - [ ] Détecter la configuration incohérente (cookie `Secure` servi en HTTP) et l'expliquer
-  - [ ] Ajouter `ProxyFix` pour fonctionner derrière un reverse proxy HTTPS
-  - [ ] Ajouter un reverse proxy HTTPS automatique (Caddy) dans `docker-compose.yml`
-- [ ] **Erreurs de formulaire invisibles.** Les templates n'affichent jamais
+  - [x] Afficher une erreur explicite quand le jeton CSRF ou la session manque
+  - [x] Détecter la configuration incohérente (cookie `Secure` servi en HTTP) et l'expliquer
+  - [x] Ajouter `ProxyFix` pour fonctionner derrière un reverse proxy HTTPS
+  - [x] Ajouter un reverse proxy HTTPS automatique (Caddy) dans `docker-compose.yml`
+- [x] **Erreurs de formulaire invisibles.** Les templates n'affichent jamais
   les erreurs WTForms : confirmation de mot de passe différente, email
   invalide, champ trop long… Le formulaire revient sans explication.
 - [ ] **Aucun pack de crédits en production.** Les packs ne sont créés que par
@@ -108,9 +108,9 @@ Gunicorn, worker et beat Celery, navigateur Chromium.
 
 - [ ] Authentifier les webhooks SMS (jeton secret dans l'URL de callback)
 - [ ] Limiter la taille des uploads (`MAX_CONTENT_LENGTH`) pour l'import CSV
-- [ ] `RATELIMIT_STORAGE_URI` sur Redis dans `docker-compose.yml`
-- [ ] Identifiants PostgreSQL lus depuis `.env` au lieu d'être écrits en dur dans `docker-compose.yml`
-- [ ] Profil production : refuser les `SECRET_KEY` d'exemple de `.env.example`
+- [x] `RATELIMIT_STORAGE_URI` sur Redis dans `docker-compose.yml`
+- [x] Identifiants PostgreSQL lus depuis `.env` au lieu d'être écrits en dur dans `docker-compose.yml`
+- [x] Profil production : refuser les `SECRET_KEY` d'exemple de `.env.example`
 
 ## P2 — Reporté ou plus tard
 

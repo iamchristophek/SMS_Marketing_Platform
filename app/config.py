@@ -45,6 +45,9 @@ class BaseConfig:
     REMEMBER_COOKIE_SECURE = _bool_env("SESSION_COOKIE_SECURE", True)
     PERMANENT_SESSION_LIFETIME = timedelta(hours=12)
     WTF_CSRF_TIME_LIMIT = None
+    # Nombre de reverse proxies de confiance devant l'application (Caddy du
+    # docker-compose = 1). 0 = pas de proxy : en-têtes X-Forwarded-* ignorés.
+    PROXY_FIX_COUNT = int(os.environ.get("PROXY_FIX_COUNT", 0))
 
     # --- JWT (API) ---
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", SECRET_KEY)
@@ -90,6 +93,8 @@ class BaseConfig:
     # --- Crédits / tarification ---
     SMS_COST_CREDITS = int(os.environ.get("SMS_COST_CREDITS", 1))
     FREE_TRIAL_CREDITS = int(os.environ.get("FREE_TRIAL_CREDITS", 20))
+    # Seuil (en crédits) sous lequel le tableau de bord signale un solde faible.
+    LOW_BALANCE_THRESHOLD = int(os.environ.get("LOW_BALANCE_THRESHOLD", 50))
 
     # --- Divers ---
     DEFAULT_COUNTRY_CODE = "225"  # Côte d'Ivoire
@@ -133,10 +138,14 @@ class ProductionConfig(BaseConfig):
     @staticmethod
     def init_app(app):
         BaseConfig.init_app(app)
-        if not app.config.get("SECRET_KEY"):
-            raise RuntimeError(
-                "SECRET_KEY doit être défini via variable d'environnement en production."
-            )
+        for key in ("SECRET_KEY", "JWT_SECRET_KEY"):
+            value = app.config.get(key) or ""
+            if len(value) < 32 or value.startswith("change-moi"):
+                raise RuntimeError(
+                    f"{key} doit être défini en production avec une valeur aléatoire d'au "
+                    "moins 32 caractères (pas la valeur d'exemple de .env.example). "
+                    'Générez-la avec : python -c "import secrets; print(secrets.token_urlsafe(64))"'
+                )
         if app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite") and not _bool_env(
             "ALLOW_SQLITE_IN_PROD"
         ):

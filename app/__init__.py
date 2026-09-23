@@ -2,18 +2,34 @@ import logging
 import os
 
 from flask import Flask, jsonify, render_template, request
+from flask_wtf.csrf import CSRFError
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from app.config import config
 from app.extensions import csrf, db, jwt, limiter, login_manager, migrate
 
 
-def create_app(config_name=None):
+def create_app(config_name=None, **config_overrides):
+    """`config_overrides` remplace des clés de configuration avant
+    l'initialisation (utile aux tests : PROXY_FIX_COUNT, etc.)."""
     config_name = config_name or os.environ.get("FLASK_ENV", "development")
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config[config_name])
+    app.config.update(config_overrides)
     config[config_name].init_app(app)
 
     os.makedirs(app.instance_path, exist_ok=True)
+
+    # Derrière un reverse proxy HTTPS (Caddy, Nginx), l'application reçoit
+    # du HTTP : ProxyFix lui fait lire X-Forwarded-Proto/For/Host pour
+    # connaître le vrai schéma (cookies Secure, URL de callback) et la vraie
+    # IP du client (rate limiting). Désactivé par défaut : sans proxy, faire
+    # confiance à ces en-têtes permettrait d'usurper une IP.
+    proxy_count = app.config.get("PROXY_FIX_COUNT", 0)
+    if proxy_count:
+        app.wsgi_app = ProxyFix(
+            app.wsgi_app, x_for=proxy_count, x_proto=proxy_count, x_host=proxy_count
+        )
 
     _init_extensions(app)
     _register_blueprints(app)
@@ -105,6 +121,18 @@ def _register_error_handlers(app):
             return jsonify(error="Trop de requêtes, réessayez plus tard"), 429
         return render_template("errors/429.html"), 429
 
+    @app.errorhandler(CSRFError)
+    def csrf_error(error):
+        # Sans ce gestionnaire, Flask-WTF renvoie une page 400 anglaise
+        # générique ; et un message flash ne servirait à rien, puisqu'il
+        # passe lui-même par le cookie de session absent.
+        app.logger.warning(
+            "Formulaire refusé (CSRF) sur %s : %s — HTTPS=%s", request.path, error.description, request.is_secure
+        )
+        if wants_json():
+            return jsonify(error="Jeton CSRF manquant ou invalide"), 400
+        return render_template("errors/csrf.html"), 400
+
 
 def _register_cli(app):
     from app.cli import register_cli_commands
@@ -112,7 +140,22 @@ def _register_cli(app):
     register_cli_commands(app)
 
 
+def _is_insecure_transport(app):
+    """Vrai si le cookie de session exige HTTPS mais que la page est servie
+    en HTTP : le navigateur ne renverra alors jamais le cookie, et toute
+    soumission de formulaire (inscription, connexion...) échouera.
+    localhost est exclu : les navigateurs le traitent comme sécurisé."""
+    if not app.config.get("SESSION_COOKIE_SECURE") or request.is_secure:
+        return False
+    host = (request.host or "").split(":")[0]
+    return host not in {"localhost", "127.0.0.1", "[::1]"}
+
+
 def _register_hooks(app):
+    @app.context_processor
+    def inject_transport_warning():
+        return {"insecure_transport": _is_insecure_transport(app)}
+
     @app.after_request
     def set_security_headers(response):
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
