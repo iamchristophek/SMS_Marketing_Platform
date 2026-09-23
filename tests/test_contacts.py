@@ -209,3 +209,15 @@ def test_every_post_form_carries_a_csrf_token(app, auth_client, db, contacts, us
         html = auth_client.get(page).data.decode()
         for form in re.findall(r"<form[^>]*method=\"POST\"[^>]*>.*?</form>", html, flags=re.S | re.I):
             assert 'name="csrf_token"' in form, f"Formulaire sans jeton CSRF sur {page} :\n{form[:200]}"
+
+
+def test_delete_from_edit_page_returns_to_list(auth_client, contacts):
+    contact = contacts[0]
+    resp = auth_client.post(
+        f"/contacts/{contact.id}/delete", headers={"Referer": f"http://localhost/contacts/{contact.id}/edit"}
+    )
+    assert resp.headers["Location"].endswith("/contacts/")
+    resp = auth_client.post(
+        f"/contacts/{contacts[1].id}/delete", headers={"Referer": "http://localhost/contacts/?q=aya"}
+    )
+    assert resp.headers["Location"].endswith("/contacts/?q=aya")

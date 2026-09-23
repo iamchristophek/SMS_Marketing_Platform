@@ -133,6 +133,21 @@ Gunicorn, worker et beat Celery, navigateur Chromium.
 - [x] Tableau de bord : « Bien démarrer » pour un nouveau client, campagnes à
   finaliser et planifiées, affichage mobile sans débordement horizontal
 
+### Trouvé lors du déploiement Docker réel (docker compose + Caddy, 23/09/2026)
+- [x] Build Docker : `apt-get` inutile (build-essential, libpq-dev, curl) ; les
+  wheels suffisent. Image plus légère, build sans accès aux dépôts Debian.
+- [x] Worker et beat Celery marqués « unhealthy » en permanence (healthcheck
+  HTTP du Dockerfile) : healthcheck `celery inspect ping` pour le worker,
+  désactivé pour beat.
+- [x] Gunicorn : 2×CPU+1 workers calculé sur les CPU de l'hôte (17 workers
+  ici) ; plafonné à 4 par défaut, réglable avec `WEB_CONCURRENCY`.
+- [x] Suppression d'un contact depuis sa fiche : redirection vers la fiche
+  supprimée (erreur 404). Retour à la liste désormais.
+- [x] Parcours complet validé dans le navigateur, en HTTPS derrière Caddy,
+  CSRF actif : inscription, compte, groupes, contacts, import, actions
+  groupées, modèles, campagne personnalisée (aperçu puis envoi), campagne
+  planifiée puis annulée, achat manuel validé par l'admin, clé API et envoi API.
+
 ## P1 — Sécurité et exploitation
 
 - [x] Authentifier les webhooks SMS (jeton secret dans l'URL de callback)

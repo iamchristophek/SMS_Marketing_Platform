@@ -125,7 +125,12 @@ def delete(contact_id):
     db.session.delete(contact)
     db.session.commit()
     flash("Contact supprimé.", "info")
-    return redirect(request.referrer or url_for("contacts.index"))
+    # Revenir à la liste (filtres conservés), jamais à la fiche du contact
+    # qui vient d'être supprimé (404).
+    back = request.referrer or ""
+    if f"/contacts/{contact_id}/" in back or "/contacts/" not in back:
+        back = url_for("contacts.index")
+    return redirect(back)
 
 
 @contacts_bp.route("/bulk", methods=["POST"])
