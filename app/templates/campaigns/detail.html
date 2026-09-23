@@ -9,7 +9,8 @@
 <div class="card">
     <p><strong>Message :</strong></p>
     <p>{{ campaign.message_body }}</p>
-    <p class="text-muted">{{ campaign.segments_per_message }} SMS par destinataire</p>
+    {% set info = campaign.sms_info %}
+    <p class="text-muted">{{ info.segments }} SMS par destinataire ({{ info.encoding }}{% if info.non_gsm_chars %}, à cause de : {{ info.non_gsm_chars|join(' ') }}{% endif %})</p>
 </div>
 
 <div class="grid grid-4 mb-1">

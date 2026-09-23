@@ -177,3 +177,44 @@ def test_execute_campaign_is_not_run_twice(app, db, business, user):
     campaign_service.execute_campaign(campaign.id, sender_id="PMEPMI", sms_cost_credits=1)
     assert campaign_service.execute_campaign(campaign.id, sender_id="PMEPMI", sms_cost_credits=1) is None
     assert Message.query.filter_by(campaign_id=campaign.id).count() == 1
+
+
+def test_accented_message_is_billed_as_ucs2():
+    from app.services.sms.encoding import analyze_message
+
+    info = analyze_message("Réduction ça vaut le coup")
+    assert info.encoding == "UCS-2"
+    assert info.non_gsm_chars == ("ç",)
+    # 71 caractères avec un « ç » : 2 SMS en UCS-2 (1 seul en GSM-7).
+    assert compute_sms_segments("ç" + "a" * 70) == 2
+    assert compute_sms_segments("ç" + "a" * 69) == 1
+    assert compute_sms_segments("ç" + "a" * 134) == 3
+
+
+def test_gsm7_extension_characters_count_double():
+    assert compute_sms_segments("€" * 80) == 1
+    assert compute_sms_segments("€" * 81) == 2
+
+
+def test_common_french_accents_stay_gsm7():
+    from app.services.sms.encoding import analyze_message
+
+    # é, è, à, ù sont dans l'alphabet GSM : pas de surcoût.
+    assert analyze_message("Été à Abidjan : -20% où vous voulez").encoding == "GSM-7"
+
+
+def test_emoji_counts_as_two_ucs2_units():
+    from app.services.sms.encoding import analyze_message
+
+    assert analyze_message("🙏").length == 2
+
+
+def test_campaign_reservation_uses_ucs2_segments(app, db, business, user):
+    _make_contact(db, business, "+2250712345678")
+    campaign = Campaign(
+        business_id=business.id, created_by_id=user.id, name="Promo", message_body="ç" + "a" * 70
+    )
+    db.session.add(campaign)
+    db.session.commit()
+    _, cost = campaign_service.reserve_credits(campaign, sms_cost_credits=1)
+    assert cost == 2

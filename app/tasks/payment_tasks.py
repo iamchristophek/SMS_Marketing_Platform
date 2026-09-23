@@ -22,29 +22,28 @@ def reconcile_pending_payments():
     threshold_minutes = current_app.config.get("PAYMENT_RECONCILE_AFTER_MINUTES", 15)
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=threshold_minutes)
 
+    provider = get_payment_provider()
+    # Seuls les paiements du fournisseur actif peuvent être vérifiés auprès
+    # de lui ; les paiements « manual » attendent une validation humaine.
     stale_payments = Payment.query.filter(
         Payment.status == Payment.STATUS_PENDING,
+        Payment.provider == provider.name,
+        Payment.provider != "manual",
         Payment.created_at <= cutoff,
     ).all()
 
-    provider = get_payment_provider()
     reconciled = 0
     for payment in stale_payments:
         if not payment.provider_reference:
             continue
         real_status = provider.verify_status(payment.provider_reference)
         if real_status == "success":
-            payment.status = Payment.STATUS_SUCCESS
-            payment.completed_at = datetime.now(timezone.utc)
-            billing_service.credit_purchase(
-                payment.business,
-                payment.credits,
-                f"Achat pack « {payment.package.name} » (Mobile Money, réconcilié)",
-                payment.id,
+            billing_service.complete_payment(
+                payment, f"Achat pack « {payment.package.name} » (Mobile Money, réconcilié)"
             )
             reconciled += 1
         elif real_status == "failed":
-            payment.status = Payment.STATUS_FAILED
+            billing_service.fail_payment(payment)
             reconciled += 1
 
     db.session.commit()

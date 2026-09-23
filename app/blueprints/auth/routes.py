@@ -6,7 +6,8 @@ from flask_login import current_user, login_required, login_user, logout_user
 from app.blueprints.auth import auth_bp
 from app.blueprints.auth.forms import ChangePasswordForm, LoginForm, RegistrationForm
 from app.extensions import db, limiter
-from app.models.user import Business, User
+from app.models.user import User
+from app.services.account_service import create_business_with_owner
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
@@ -22,21 +23,13 @@ def register():
         elif User.query.filter_by(email=form.email.data).first():
             flash("Cette adresse email est déjà utilisée.", "error")
         else:
-            business = Business(
-                name=form.business_name.data,
-                credit_balance=current_app.config["FREE_TRIAL_CREDITS"],
+            create_business_with_owner(
+                form.business_name.data,
+                form.username.data,
+                form.email.data,
+                form.password.data,
+                current_app.config["FREE_TRIAL_CREDITS"],
             )
-            db.session.add(business)
-            db.session.flush()
-
-            user = User(
-                username=form.username.data,
-                email=form.email.data,
-                role=User.ROLE_OWNER,
-                business_id=business.id,
-            )
-            user.set_password(form.password.data)
-            db.session.add(user)
             db.session.commit()
 
             flash(

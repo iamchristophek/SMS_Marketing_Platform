@@ -114,16 +114,11 @@ def payment_callback():
     real_status = provider.verify_status(provider_reference)
 
     if real_status == "success":
-        payment.status = Payment.STATUS_SUCCESS
-        payment.completed_at = utcnow()
-        billing_service.credit_purchase(
-            payment.business,
-            payment.credits,
-            f"Achat pack « {payment.package.name} » (Mobile Money)",
-            payment.id,
+        billing_service.complete_payment(
+            payment, f"Achat pack « {payment.package.name} » (Mobile Money)"
         )
     elif real_status == "failed":
-        payment.status = Payment.STATUS_FAILED
+        billing_service.fail_payment(payment)
 
     db.session.commit()
     return jsonify(status="ok"), 200

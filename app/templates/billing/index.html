@@ -7,14 +7,44 @@
     <div class="label">Crédits disponibles</div>
 </div>
 
+{% if pending_payments %}
+<h2 class="mt-2">Demandes d'achat en attente</h2>
+<div class="card">
+    <table>
+        <thead><tr><th>Date</th><th>Pack</th><th>Montant</th><th>Référence</th><th>Comment payer</th><th></th></tr></thead>
+        <tbody>
+        {% for payment, instructions in pending_payments %}
+            <tr>
+                <td>{{ payment.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>{{ payment.package.name }} ({{ payment.credits }} crédits)</td>
+                <td>{{ "{:,}".format(payment.amount_xof).replace(",", " ") }} F CFA</td>
+                <td><strong>{{ payment.provider_reference }}</strong></td>
+                <td class="text-muted">{{ instructions or "Paiement en cours de confirmation par l'opérateur." }}</td>
+                <td>
+                    {% if payment.provider == "manual" %}
+                    <form method="POST" action="{{ url_for('billing.cancel_payment', payment_id=payment.id) }}"
+                          onsubmit="return confirm('Annuler cette demande d\'achat ?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline">Annuler</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
 <h2 class="mt-2">Recharger mon compte</h2>
+{% if packages %}
 <div class="grid grid-4">
     {% for package in packages %}
     <div class="card pricing-card">
         <h3>{{ package.name }}</h3>
-        <div class="price">{{ "{:,}".format(package.price_xof).replace(",", " ") }} XOF</div>
+        <div class="price">{{ "{:,}".format(package.price_xof).replace(",", " ") }} F CFA</div>
         <p>{{ package.credits }} crédits SMS</p>
-        <p class="text-muted">{{ package.price_per_sms }} XOF / SMS</p>
+        <p class="text-muted">{{ package.price_per_sms }} F CFA / SMS</p>
         <form method="POST" action="{{ url_for('billing.buy', package_id=package.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn">Acheter</button>
@@ -22,6 +52,12 @@
     </div>
     {% endfor %}
 </div>
+{% else %}
+<div class="card">
+    <p>Aucune offre de recharge n'est disponible pour le moment.
+       Contactez le support : <a href="mailto:{{ config.MAIL_SUPPORT_ADDRESS }}">{{ config.MAIL_SUPPORT_ADDRESS }}</a>.</p>
+</div>
+{% endif %}
 
 <h2 class="mt-2">Historique des transactions</h2>
 <div class="card">
@@ -32,7 +68,7 @@
         {% for tx in transactions %}
             <tr>
                 <td>{{ tx.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
-                <td>{{ tx.type }}</td>
+                <td>{{ transaction_labels.get(tx.type, tx.type) }}</td>
                 <td>{{ '+' if tx.amount > 0 else '' }}{{ tx.amount }}</td>
                 <td>{{ tx.balance_after }}</td>
                 <td>{{ tx.description }}</td>

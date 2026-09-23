@@ -85,6 +85,14 @@ class BaseConfig:
 
     # --- Mobile Money / paiement ---
     PAYMENT_PROVIDER = os.environ.get("PAYMENT_PROVIDER", "manual")
+    # Paiement « manual » : instructions affichées au client pour payer hors
+    # plateforme. {montant} et {reference} sont remplacés automatiquement.
+    MANUAL_PAYMENT_INSTRUCTIONS = os.environ.get(
+        "MANUAL_PAYMENT_INSTRUCTIONS",
+        "Envoyez {montant} F CFA par Mobile Money en indiquant la référence {reference} "
+        "dans le motif. Vos crédits sont ajoutés dès réception du paiement.",
+    )
+    MANUAL_PAYMENT_AUTO_APPROVE = _bool_env("MANUAL_PAYMENT_AUTO_APPROVE", False)
     CINETPAY_API_KEY = os.environ.get("CINETPAY_API_KEY")
     CINETPAY_SITE_ID = os.environ.get("CINETPAY_SITE_ID")
     CINETPAY_SECRET_KEY = os.environ.get("CINETPAY_SECRET_KEY")
@@ -146,6 +154,10 @@ class ProductionConfig(BaseConfig):
                     "moins 32 caractères (pas la valeur d'exemple de .env.example). "
                     'Générez-la avec : python -c "import secrets; print(secrets.token_urlsafe(64))"'
                 )
+        if app.config.get("MANUAL_PAYMENT_AUTO_APPROVE"):
+            raise RuntimeError(
+                "MANUAL_PAYMENT_AUTO_APPROVE crédite gratuitement tout achat : interdit en production."
+            )
         if app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite") and not _bool_env(
             "ALLOW_SQLITE_IN_PROD"
         ):

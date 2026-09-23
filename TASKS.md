@@ -43,20 +43,20 @@ Gunicorn, worker et beat Celery, navigateur Chromium.
 - [x] **Erreurs de formulaire invisibles.** Les templates n'affichent jamais
   les erreurs WTForms : confirmation de mot de passe différente, email
   invalide, champ trop long… Le formulaire revient sans explication.
-- [ ] **Aucun pack de crédits en production.** Les packs ne sont créés que par
+- [x] **Aucun pack de crédits en production.** Les packs ne sont créés que par
   `flask seed-demo`, qui crée aussi un compte `demo` au mot de passe public.
   Il faut une commande séparée `flask seed-packages`, et un message clair sur
   la page Crédits quand aucun pack n'existe.
-- [ ] **Paiement `manual` : crédits gratuits.** Tout clic sur « Acheter » crédite
+- [x] **Paiement `manual` : crédits gratuits.** Tout clic sur « Acheter » crédite
   le compte immédiatement. En attendant l'API Mobile Money, il faut que la
   demande reste en attente et qu'un administrateur la valide
   (`flask payments list` / `flask payments approve <id>`), après réception
   du paiement hors plateforme.
-- [ ] **Facturation des messages accentués.** Un seul caractère hors
+- [x] **Facturation des messages accentués.** Un seul caractère hors
   GSM-7 (ç, â, ê, î, ô, û, ë, ï, ’, emoji…) fait passer le SMS en UCS-2 :
   70 caractères, ou 67 par segment au-delà. Aujourd'hui, ces messages sont
   facturés comme du GSM-7, donc moins que ce que l'agrégateur facture.
-- [ ] **Mot de passe oublié : aucune récupération possible.** Il n'y a pas
+- [x] **Mot de passe oublié : aucune récupération possible.** Il n'y a pas
   d'envoi d'email. Pour le MVP : une commande `flask reset-password`.
   La récupération par email vient plus tard (P2).
 
@@ -97,12 +97,22 @@ Gunicorn, worker et beat Celery, navigateur Chromium.
 - [ ] Page « Mon compte » : entreprise (nom, secteur, ville, téléphone) et utilisateur
 - [ ] Lien vers le changement de mot de passe dans la navigation
 - [ ] Écran de gestion des clés API (créer, voir le préfixe, révoquer)
-- [ ] Types de transaction en français sur la page Crédits
+- [x] Types de transaction en français sur la page Crédits
 
 ### Intégrité des données
-- [ ] Crédits offerts à l'inscription (et par `create-admin` / `seed-demo`)
+- [x] Crédits offerts à l'inscription (et par `create-admin` / `seed-demo`)
   écrits dans le journal `CreditTransaction`, pas seulement dans le solde
-- [ ] `seed-demo` : créer quelques contacts comme l'indique sa docstring
+- [x] `seed-demo` : créer quelques contacts comme l'indique sa docstring
+
+### Nouveautés découvertes en cours de route
+- [x] `seed-demo` refusé en production (compte `demo` au mot de passe public)
+- [x] Commandes d'administration : `flask businesses list`, `flask credits add`
+- [x] Le client peut annuler une demande d'achat manuelle non payée
+- [x] La réconciliation des paiements ignorait le fournisseur : elle aurait
+  interrogé CinetPay pour des paiements `manual` après un changement de
+  fournisseur. Elle ne traite plus que les paiements du fournisseur actif.
+- [x] Compteur de caractères du formulaire de campagne aligné sur le calcul
+  serveur (GSM-7/UCS-2) et signalant les caractères qui coûtent cher
 
 ## P1 — Sécurité et exploitation
 

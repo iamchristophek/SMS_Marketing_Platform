@@ -72,3 +72,49 @@ def refund_for_campaign(business, amount: int, campaign_id: int, description: st
     return adjust_credits(
         business, amount, CreditTransaction.TYPE_REFUND, description, campaign_id=campaign_id
     )
+
+
+# ---------------------------------------------------------------------------
+# Paiements (achat de packs)
+# ---------------------------------------------------------------------------
+TRANSACTION_LABELS = {
+    CreditTransaction.TYPE_PURCHASE: "Achat",
+    CreditTransaction.TYPE_CONSUMPTION: "Envoi SMS",
+    CreditTransaction.TYPE_REFUND: "Remboursement",
+    CreditTransaction.TYPE_BONUS: "Crédits offerts",
+}
+
+
+def complete_payment(payment, description: str | None = None) -> bool:
+    """Marque un paiement en attente comme réussi et crédite l'entreprise.
+    Idempotent : ne fait rien (et renvoie False) si le paiement n'est plus
+    en attente, pour qu'un webhook rejoué, la réconciliation périodique et
+    une validation manuelle ne puissent jamais créditer deux fois. Ne fait
+    pas le commit : c'est à l'appelant de le faire (verrous, lots)."""
+    from datetime import datetime, timezone
+
+    from app.models.billing import Payment
+
+    if payment.status != Payment.STATUS_PENDING:
+        return False
+    payment.status = Payment.STATUS_SUCCESS
+    payment.completed_at = datetime.now(timezone.utc)
+    credit_purchase(
+        payment.business,
+        payment.credits,
+        description or f"Achat pack « {payment.package.name} »",
+        payment.id,
+    )
+    return True
+
+
+def fail_payment(payment) -> bool:
+    from datetime import datetime, timezone
+
+    from app.models.billing import Payment
+
+    if payment.status != Payment.STATUS_PENDING:
+        return False
+    payment.status = Payment.STATUS_FAILED
+    payment.completed_at = datetime.now(timezone.utc)
+    return True

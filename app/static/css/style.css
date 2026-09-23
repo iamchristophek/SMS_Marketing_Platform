@@ -332,3 +332,4 @@ footer {
 /* Résumé des erreurs de formulaire (base.html) */
 .form-errors { margin: var(--space-1) 0 0; padding-left: var(--space-5); }
 .form-errors li { margin: 2px 0; }
+.warning-text { color: var(--color-warning-text); }

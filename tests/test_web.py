@@ -105,16 +105,25 @@ def test_dispatch_scheduled_campaigns_sends_due_ones(app, db, business, user):
     assert future.status == Campaign.STATUS_SCHEDULED
 
 
-def test_buy_package_with_manual_provider(auth_client, db, business):
+def test_buy_package_with_manual_provider_waits_for_admin(auth_client, db, business):
+    from app.models.billing import Payment
+
     package = CreditPackage(name="Starter", credits=500, price_xof=9000, sort_order=1)
     db.session.add(package)
     db.session.commit()
     before = business.credit_balance
 
-    resp = auth_client.post(f"/billing/buy/{package.id}")
-    assert resp.status_code == 302
+    resp = auth_client.post(f"/billing/buy/{package.id}", follow_redirects=True)
+    assert resp.status_code == 200
     db.session.refresh(business)
-    assert business.credit_balance == before + 500
+    # Paiement hors plateforme : aucun crédit tant qu'un administrateur n'a
+    # pas validé la réception de l'argent.
+    assert business.credit_balance == before
+    payment = Payment.query.one()
+    assert payment.status == Payment.STATUS_PENDING
+    assert payment.provider_reference.startswith(f"BX{payment.id}-")
+    assert payment.provider_reference.encode() in resp.data
+    assert "Mobile Money".encode() in resp.data
 
 
 def test_delete_scheduled_campaign_refunds_and_keeps_ledger(auth_client, db, business, user):

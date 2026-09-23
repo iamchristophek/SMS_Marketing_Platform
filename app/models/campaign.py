@@ -1,4 +1,3 @@
-import math
 from datetime import datetime, timezone
 
 from app.extensions import db
@@ -8,19 +7,9 @@ def utcnow():
     return datetime.now(timezone.utc)
 
 
-# Une trame SMS GSM-7 standard = 160 caractères, ou 153 par segment si le
-# message est découpé en plusieurs segments (concaténation UDH).
-GSM7_SINGLE_LIMIT = 160
-GSM7_MULTIPART_LIMIT = 153
-
-
-def compute_sms_segments(message_body: str) -> int:
-    length = len(message_body or "")
-    if length == 0:
-        return 0
-    if length <= GSM7_SINGLE_LIMIT:
-        return 1
-    return math.ceil(length / GSM7_MULTIPART_LIMIT)
+# Calcul GSM-7 / UCS-2 : voir app/services/sms/encoding.py. Réexporté ici
+# pour les imports existants (services, API, tests).
+from app.services.sms.encoding import analyze_message, compute_sms_segments  # noqa: E402,F401
 
 
 class Campaign(db.Model):
@@ -68,6 +57,10 @@ class Campaign(db.Model):
     @property
     def segments_per_message(self):
         return compute_sms_segments(self.message_body)
+
+    @property
+    def sms_info(self):
+        return analyze_message(self.message_body)
 
     @property
     def open_rate(self):
