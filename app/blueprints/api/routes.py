@@ -13,6 +13,7 @@ from app.models.contact import Contact, ContactGroup
 from app.models.user import User
 from app.services import billing_service, campaign_service
 from app.services.billing_service import InsufficientCreditsError
+from app.services.campaign_service import CampaignError
 from app.services.phone import InvalidPhoneNumberError, normalize_phone
 from app.services.sms import get_sms_provider
 from app.tasks.sms_tasks import send_campaign
@@ -244,42 +245,41 @@ def create_campaign():
     if author is None:
         return jsonify(error="Aucun utilisateur propriétaire associé à ce compte entreprise"), 409
 
+    scheduled_at = None
+    if data.get("scheduled_at"):
+        try:
+            scheduled_at = datetime.fromisoformat(data["scheduled_at"])
+        except (TypeError, ValueError):
+            return jsonify(error="scheduled_at doit être au format ISO 8601"), 400
+        if scheduled_at.tzinfo is None:
+            scheduled_at = scheduled_at.replace(tzinfo=timezone.utc)
+
     campaign = Campaign(
         business_id=business.id,
         created_by_id=author.id,
         name=name,
         message_body=message_body,
         group_id=group_id,
+        consent_only=bool(data.get("consent_only", False)),
         status=Campaign.STATUS_DRAFT,
     )
     db.session.add(campaign)
     db.session.flush()
 
+    # Pas d'écran d'aperçu pour un système externe : la campagne est
+    # confirmée directement (mêmes règles que la confirmation web).
     try:
-        campaign_service.reserve_credits(campaign, current_app.config["SMS_COST_CREDITS"])
+        send_now = campaign_service.launch(
+            campaign, current_app.config["SMS_COST_CREDITS"], scheduled_at=scheduled_at
+        )
+    except CampaignError as exc:
+        db.session.rollback()
+        return jsonify(error=str(exc)), 422
     except InsufficientCreditsError as exc:
         db.session.rollback()
         return jsonify(error=str(exc)), 402
-
-    scheduled_at_raw = data.get("scheduled_at")
-    now = datetime.now(timezone.utc)
-    scheduled_at = None
-    if scheduled_at_raw:
-        try:
-            scheduled_at = datetime.fromisoformat(scheduled_at_raw)
-            if scheduled_at.tzinfo is None:
-                scheduled_at = scheduled_at.replace(tzinfo=timezone.utc)
-        except ValueError:
-            return jsonify(error="scheduled_at doit être au format ISO 8601"), 400
-
-    if scheduled_at and scheduled_at > now:
-        campaign.status = Campaign.STATUS_SCHEDULED
-        campaign.scheduled_at = scheduled_at
-        db.session.commit()
-    else:
-        campaign.status = Campaign.STATUS_SCHEDULED
-        campaign.scheduled_at = now
-        db.session.commit()
+    db.session.commit()
+    if send_now:
         send_campaign.delay(campaign.id)
 
     return jsonify(id=campaign.id, status=campaign.status, total_recipients=campaign.total_recipients), 201

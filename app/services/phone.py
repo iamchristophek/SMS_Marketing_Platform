@@ -64,3 +64,47 @@ def format_for_display(e164_number: str) -> str:
         local = e164_number[len(CI_COUNTRY_CODE) + 1:]
         return " ".join(local[i : i + 2] for i in range(0, len(local), 2))
     return e164_number
+
+
+# Plan de numérotation 2021 : les deux premiers chiffres après +225
+# identifient l'opérateur. 07/05/01 sont des mobiles ; 27/25/21 sont les
+# lignes fixes correspondantes, qui ne reçoivent pas de SMS.
+OPERATOR_ORANGE = "orange"
+OPERATOR_MTN = "mtn"
+OPERATOR_MOOV = "moov"
+OPERATOR_FIXED = "fixe"
+OPERATOR_OTHER = "international"
+
+MOBILE_PREFIXES = {"07": OPERATOR_ORANGE, "05": OPERATOR_MTN, "01": OPERATOR_MOOV}
+FIXED_PREFIXES = ("21", "25", "27")
+
+OPERATOR_LABELS = {
+    OPERATOR_ORANGE: "Orange",
+    OPERATOR_MTN: "MTN",
+    OPERATOR_MOOV: "Moov",
+    OPERATOR_FIXED: "Ligne fixe",
+    OPERATOR_OTHER: "International",
+}
+
+
+def detect_operator(e164_number: str) -> str:
+    """Opérateur d'un numéro E.164 : orange, mtn, moov, fixe ou international."""
+    if not is_ivorian_number(e164_number or ""):
+        return OPERATOR_OTHER
+    prefix = e164_number[len(CI_COUNTRY_CODE) + 1:][:2]
+    if prefix in MOBILE_PREFIXES:
+        return MOBILE_PREFIXES[prefix]
+    if prefix in FIXED_PREFIXES:
+        return OPERATOR_FIXED
+    return OPERATOR_OTHER
+
+
+def operator_prefixes(operator: str):
+    """Préfixes E.164 (pour un filtre SQL LIKE) correspondant à un opérateur."""
+    if operator == OPERATOR_FIXED:
+        return [f"+{CI_COUNTRY_CODE}{p}" for p in FIXED_PREFIXES]
+    return [f"+{CI_COUNTRY_CODE}{p}" for p, op in MOBILE_PREFIXES.items() if op == operator]
+
+
+def can_receive_sms(e164_number: str) -> bool:
+    return detect_operator(e164_number) != OPERATOR_FIXED

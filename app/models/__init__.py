@@ -7,6 +7,7 @@ from app.models.contact import Contact, ContactGroup, contact_group_members
 from app.models.campaign import Campaign, Message
 from app.models.billing import CreditPackage, CreditTransaction, Payment
 from app.models.api_key import ApiKey
+from app.models.template import MessageTemplate
 
 __all__ = [
     "db",
@@ -21,4 +22,5 @@ __all__ = [
     "CreditTransaction",
     "Payment",
     "ApiKey",
+    "MessageTemplate",
 ]

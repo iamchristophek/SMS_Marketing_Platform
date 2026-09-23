@@ -24,6 +24,15 @@ class Campaign(db.Model):
 
     ACTIVE_STATUSES = (STATUS_DRAFT, STATUS_SCHEDULED)
 
+    STATUS_LABELS = {
+        STATUS_DRAFT: "Brouillon",
+        STATUS_SCHEDULED: "Planifiée",
+        STATUS_SENDING: "En cours d'envoi",
+        STATUS_SENT: "Envoyée",
+        STATUS_FAILED: "Échec",
+        STATUS_CANCELLED: "Annulée",
+    }
+
     id = db.Column(db.Integer, primary_key=True)
     business_id = db.Column(db.Integer, db.ForeignKey("businesses.id"), nullable=False, index=True)
     created_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
@@ -34,6 +43,8 @@ class Campaign(db.Model):
     name = db.Column(db.String(120), nullable=False)
     message_body = db.Column(db.String(640), nullable=False)  # jusqu'à 4 segments SMS
     status = db.Column(db.String(20), nullable=False, default=STATUS_DRAFT, index=True)
+    # N'envoyer qu'aux contacts ayant donné leur consentement marketing.
+    consent_only = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
 
     scheduled_at = db.Column(db.DateTime(timezone=True))
     started_at = db.Column(db.DateTime(timezone=True))
@@ -90,6 +101,15 @@ class Message(db.Model):
     STATUS_FAILED = "failed"
     STATUS_UNDELIVERED = "undelivered"
 
+    STATUS_LABELS = {
+        STATUS_PENDING: "En attente",
+        STATUS_QUEUED: "En file d'attente",
+        STATUS_SENT: "Envoyé",
+        STATUS_DELIVERED: "Livré",
+        STATUS_FAILED: "Échec d'envoi",
+        STATUS_UNDELIVERED: "Non livré",
+    }
+
     id = db.Column(db.Integer, primary_key=True)
     campaign_id = db.Column(
         db.Integer, db.ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=True, index=True
@@ -108,6 +128,9 @@ class Message(db.Model):
     provider_message_id = db.Column(db.String(120), index=True)
     error_message = db.Column(db.String(255))
     credits_used = db.Column(db.Integer, nullable=False, default=0)
+    # Coût réservé à la confirmation de la campagne ; facturé (credits_used)
+    # seulement si le SMS part, sinon rendu au client.
+    credits_reserved = db.Column(db.Integer, nullable=False, default=0, server_default="0")
 
     queued_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
     sent_at = db.Column(db.DateTime(timezone=True))

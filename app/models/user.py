@@ -36,6 +36,9 @@ class Business(db.Model):
     )
     payments = db.relationship("Payment", back_populates="business", cascade="all, delete-orphan")
     api_keys = db.relationship("ApiKey", back_populates="business", cascade="all, delete-orphan")
+    message_templates = db.relationship(
+        "MessageTemplate", back_populates="business", cascade="all, delete-orphan"
+    )
 
     def has_sufficient_credits(self, amount):
         return self.credit_balance >= amount

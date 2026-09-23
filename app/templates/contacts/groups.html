@@ -5,18 +5,25 @@
     <h1>Groupes de contacts</h1>
     <a href="{{ url_for('contacts.new_group') }}" class="btn">+ Nouveau groupe</a>
 </div>
+<p class="text-muted">Un groupe sert à cibler une campagne. Pour y ajouter des contacts existants, cochez-les dans la
+    <a href="{{ url_for('contacts.index') }}">liste des contacts</a> puis choisissez « Ajouter au groupe ».</p>
 <div class="card">
     {% if groups %}
     <table>
-        <thead><tr><th>Nom</th><th>Description</th><th>Contacts actifs</th><th></th></tr></thead>
+        <thead><tr><th>Nom</th><th>Description</th><th>Contacts</th><th>Actifs</th><th></th></tr></thead>
         <tbody>
         {% for group in groups %}
             <tr>
-                <td>{{ group.name }}</td>
+                <td><a href="{{ url_for('contacts.index', group=group.id) }}">{{ group.name }}</a></td>
                 <td>{{ group.description or '—' }}</td>
+                <td>{{ group.contacts|length }}</td>
                 <td>{{ group.active_contact_count }}</td>
-                <td>
-                    <form method="POST" action="{{ url_for('contacts.delete_group', group_id=group.id) }}" onsubmit="return confirm('Supprimer ce groupe ?');">
+                <td class="actions">
+                    <a href="{{ url_for('contacts.index', group=group.id) }}" class="btn btn-sm btn-outline">Voir les membres</a>
+                    <a href="{{ url_for('contacts.edit_group', group_id=group.id) }}" class="btn btn-sm btn-outline">Renommer</a>
+                    <form method="POST" action="{{ url_for('contacts.delete_group', group_id=group.id) }}" class="inline"
+                          onsubmit="return confirm('Supprimer ce groupe ? Les contacts sont conservés.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
                     </form>
                 </td>

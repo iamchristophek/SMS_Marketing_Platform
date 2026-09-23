@@ -333,3 +333,31 @@ footer {
 .form-errors { margin: var(--space-1) 0 0; padding-left: var(--space-5); }
 .form-errors li { margin: 2px 0; }
 .warning-text { color: var(--color-warning-text); }
+
+/* Contacts : filtres, actions groupées, cases à cocher */
+.filters { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; padding: var(--space-4); }
+.filters .form-control { width: auto; flex: 1 1 160px; }
+.filters input[type=search] { flex: 2 1 220px; }
+.bulk-bar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-bottom: var(--space-3); }
+.bulk-bar .form-control { width: auto; }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+form.inline { display: inline; }
+.nowrap { white-space: nowrap; }
+.checkbox-list ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
+.checkbox-list li { display: flex; align-items: center; gap: 6px; }
+.checkbox-list li label, .form-group.checkbox label { display: inline; font-weight: 500; margin: 0; }
+.form-group.checkbox { display: flex; gap: var(--space-2); align-items: flex-start; }
+.form-group.checkbox input { margin-top: 5px; }
+.code-sample { background: var(--color-neutral-50); border: 1px solid var(--color-neutral-100); border-radius: var(--radius-sm); padding: var(--space-3); font-size: var(--text-sm); overflow-x: auto; }
+@media (max-width: 720px) { table { display: block; overflow-x: auto; } }
+
+/* Campagnes : aperçu SMS, statuts des messages */
+.sms-preview { margin-bottom: var(--space-3); }
+.sms-meta { font-size: var(--text-xs); color: var(--color-neutral-500); margin-bottom: 4px; }
+.sms-bubble { display: inline-block; max-width: 520px; background: var(--color-neutral-100); border-radius: 16px 16px 16px 4px; padding: var(--space-3) var(--space-4); white-space: pre-wrap; word-break: break-word; }
+.text-error { color: var(--color-error-text) !important; }
+.msg-sent, .msg-queued { background: var(--color-info-bg); color: var(--color-info-text); }
+.msg-delivered { background: var(--color-success-bg); color: var(--color-success-text); }
+.msg-failed, .msg-undelivered { background: var(--color-error-bg); color: var(--color-error-text); }
+.msg-pending { background: var(--color-neutral-100); color: var(--color-neutral-600); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }

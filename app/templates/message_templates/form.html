@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card card-narrow-lg">
+    <h1>{{ title }}</h1>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">{{ form.name.label }} {{ form.name(class="form-control") }}</div>
+        <div class="form-group">{{ form.category.label }} {{ form.category(class="form-control") }}
+            <div class="help-text">Les messages promotionnels ne doivent être envoyés qu'aux contacts ayant donné leur consentement.</div>
+        </div>
+        <div class="form-group">
+            {{ form.body.label }}
+            {{ form.body(class="form-control", maxlength=640, rows=5, **{"data-sms-counter": "sms-counter"}) }}
+            <div class="help-text" id="sms-counter"></div>
+            <div class="help-text">Variables : <code>{prenom}</code>, <code>{nom}</code>. Pensez à ajouter « STOP au … » pour le désabonnement.</div>
+        </div>
+        {{ form.submit(class="btn") }}
+        <a href="{{ url_for('templates_msg.index') }}" class="btn btn-outline">Annuler</a>
+    </form>
+</div>
+<script src="{{ url_for('static', filename='js/sms-counter.js') }}"></script>
+{% endblock %}

@@ -108,6 +108,7 @@ def test_create_campaign_with_api_key_and_no_owner_returns_409(client, db, busin
 def test_create_campaign_with_api_key_uses_owner_as_author(client, db, user, business):
     api_key, raw_key = ApiKey.generate(business.id, "ERP")
     db.session.add(api_key)
+    db.session.add(Contact(business_id=business.id, phone_e164="+2250712345678"))
     db.session.commit()
 
     resp = client.post(
@@ -134,3 +135,26 @@ def test_api_rejects_values_longer_than_columns(client, user):
     resp = client.post("/api/v1/campaigns", headers=headers, json={"name": "x" * 121, "message": "Bonjour"})
     assert resp.status_code == 400
     assert Campaign.query.count() == 0
+
+
+def test_create_campaign_without_recipients_is_refused(client, db, user, business):
+    resp = client.post(
+        "/api/v1/campaigns", headers=_token(client), json={"name": "Promo", "message": "Bonjour"}
+    )
+    assert resp.status_code == 422
+    assert "Aucun destinataire" in resp.get_json()["error"]
+    assert Campaign.query.count() == 0
+    db.session.refresh(business)
+    assert business.credit_balance == 50
+
+
+def test_create_campaign_invalid_date_reserves_nothing(client, db, user, business):
+    db.session.add(Contact(business_id=business.id, phone_e164="+2250712345678"))
+    db.session.commit()
+    resp = client.post(
+        "/api/v1/campaigns", headers=_token(client),
+        json={"name": "Promo", "message": "Bonjour", "scheduled_at": "demain"},
+    )
+    assert resp.status_code == 400
+    db.session.refresh(business)
+    assert business.credit_balance == 50

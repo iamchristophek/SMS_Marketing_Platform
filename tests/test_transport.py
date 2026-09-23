@@ -67,7 +67,9 @@ def test_proxy_fix_reads_forwarded_proto():
     def _scheme():
         return request.scheme
 
-    response = application.test_client().get("/_scheme", base_url="http://localhost", headers={"X-Forwarded-Proto": "https"})
+    response = application.test_client().get(
+        "/_scheme", base_url="http://localhost", headers={"X-Forwarded-Proto": "https"}
+    )
     assert response.data == b"https"
 
 
@@ -80,7 +82,9 @@ def test_forwarded_headers_ignored_without_proxy():
     def _scheme():
         return request.scheme
 
-    response = application.test_client().get("/_scheme", base_url="http://localhost", headers={"X-Forwarded-Proto": "https"})
+    response = application.test_client().get(
+        "/_scheme", base_url="http://localhost", headers={"X-Forwarded-Proto": "https"}
+    )
     assert response.data == b"http"
 
 

@@ -3,34 +3,93 @@
 {% block content %}
 <div class="flex-between">
     <h1>{{ campaign.name }}</h1>
-    <span class="status-pill status-{{ campaign.status }}">{{ campaign.status }}</span>
+    <span class="status-pill status-{{ campaign.status }}">{{ campaign.status|campaign_status }}</span>
 </div>
 
+<div class="grid grid-4 mb-2">
+    <div class="card stat"><div class="value">{{ campaign.total_recipients|number }}</div><div class="label">Destinataires</div></div>
+    <div class="card stat"><div class="value">{{ campaign.total_sent|number }}</div><div class="label">Envoyés</div></div>
+    <div class="card stat"><div class="value">{{ campaign.total_failed|number }}</div><div class="label">Échecs</div></div>
+    <div class="card stat">
+        {% if has_delivery_reports %}
+        <div class="value">{{ campaign.open_rate }}%</div><div class="label">Taux de livraison</div>
+        {% else %}
+        <div class="value">{{ campaign.credits_used|number }}</div><div class="label">Crédits consommés</div>
+        {% endif %}
+    </div>
+</div>
+
+{% if campaign.status in ('scheduled', 'sending') %}
+<div class="alert alert-info">
+    {% if campaign.status == 'scheduled' %}Envoi prévu le {{ campaign.scheduled_at.strftime('%d/%m/%Y à %H:%M') }}. Les {{ campaign.credits_reserved }} crédits nécessaires sont réservés.
+    {% else %}Envoi en cours… actualisez la page pour suivre la progression.{% endif %}
+</div>
+{% endif %}
+
 <div class="card">
-    <p><strong>Message :</strong></p>
-    <p>{{ campaign.message_body }}</p>
+    <h2>Message</h2>
+    <div class="sms-bubble">{{ campaign.message_body }}</div>
     {% set info = campaign.sms_info %}
-    <p class="text-muted">{{ info.segments }} SMS par destinataire ({{ info.encoding }}{% if info.non_gsm_chars %}, à cause de : {{ info.non_gsm_chars|join(' ') }}{% endif %})</p>
+    <p class="text-muted mt-1">{{ info.segments }} SMS par destinataire ({{ info.encoding }}{% if info.non_gsm_chars %}, à cause de : {{ info.non_gsm_chars|join(' ') }}{% endif %})
+        — {{ campaign.group.name if campaign.group else "tous les contacts" }}{% if campaign.consent_only %}, avec consentement uniquement{% endif %}.</p>
+    <p class="text-muted">Créée le {{ campaign.created_at.strftime('%d/%m/%Y à %H:%M') }}{% if campaign.created_by %} par {{ campaign.created_by.username }}{% endif %}
+        {% if campaign.completed_at %} — terminée le {{ campaign.completed_at.strftime('%d/%m/%Y à %H:%M') }}{% endif %}.
+        Crédits réservés : {{ campaign.credits_reserved }}, consommés : {{ campaign.credits_used }}.</p>
 </div>
 
-<div class="grid grid-4 mb-1">
-    <div class="card stat"><div class="value">{{ campaign.total_recipients }}</div><div class="label">Destinataires</div></div>
-    <div class="card stat"><div class="value">{{ campaign.total_sent }}</div><div class="label">Envoyés</div></div>
-    <div class="card stat"><div class="value">{{ campaign.total_delivered }}</div><div class="label">Livrés</div></div>
-    <div class="card stat"><div class="value">{{ campaign.open_rate }}%</div><div class="label">Taux de livraison</div></div>
-</div>
-
+{% if counts %}
 <div class="card">
-    <p><strong>Créée le :</strong> {{ campaign.created_at.strftime('%d/%m/%Y à %H:%M') }}</p>
-    {% if campaign.scheduled_at %}<p><strong>Planifiée pour :</strong> {{ campaign.scheduled_at.strftime('%d/%m/%Y à %H:%M') }}</p>{% endif %}
-    <p><strong>Crédits réservés :</strong> {{ campaign.credits_reserved }} — <strong>Crédits utilisés :</strong> {{ campaign.credits_used }}</p>
+    <div class="flex-between">
+        <h2>SMS de la campagne</h2>
+        <div class="actions">
+            <a href="{{ url_for('campaigns.detail', campaign_id=campaign.id) }}" class="btn btn-sm {{ 'btn-secondary' if not status else 'btn-outline' }}">Tous</a>
+            {% for key, n in counts.items() %}
+            <a href="{{ url_for('campaigns.detail', campaign_id=campaign.id, status=key) }}" class="btn btn-sm {{ 'btn-secondary' if status == key else 'btn-outline' }}">{{ message_labels.get(key, key) }} ({{ n }})</a>
+            {% endfor %}
+        </div>
+    </div>
+    <table>
+        <thead><tr><th>Destinataire</th><th>Numéro</th><th>Statut</th><th>Envoyé le</th><th>Détail</th></tr></thead>
+        <tbody>
+        {% for m in messages %}
+            <tr>
+                <td>{% if m.contact %}<a href="{{ url_for('contacts.edit', contact_id=m.contact_id) }}">{{ m.contact.full_name }}</a>{% else %}<span class="text-muted">Contact supprimé</span>{% endif %}</td>
+                <td class="nowrap">{{ m.phone_e164 }}</td>
+                <td><span class="status-pill msg-{{ m.status }}">{{ m.status|message_status }}</span></td>
+                <td>{{ m.sent_at.strftime('%d/%m/%Y %H:%M') if m.sent_at else '—' }}</td>
+                <td class="text-muted">{{ m.error_message or '' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% if pagination.pages > 1 %}
+    <div class="mt-1">
+        {% if pagination.has_prev %}<a href="{{ url_for('campaigns.detail', campaign_id=campaign.id, status=status, page=pagination.prev_num) }}">&laquo; Précédent</a>{% endif %}
+        <span class="text-muted"> Page {{ pagination.page }} / {{ pagination.pages }} </span>
+        {% if pagination.has_next %}<a href="{{ url_for('campaigns.detail', campaign_id=campaign.id, status=status, page=pagination.next_num) }}">Suivant &raquo;</a>{% endif %}
+    </div>
+    {% endif %}
 </div>
+{% endif %}
 
-<div class="flex-between">
+<div class="actions">
     <a href="{{ url_for('campaigns.index') }}" class="btn btn-outline">&laquo; Retour aux campagnes</a>
-    {% if campaign.is_editable() %}
-    <form method="POST" action="{{ url_for('campaigns.delete', campaign_id=campaign.id) }}" onsubmit="return confirm('Annuler et supprimer cette campagne ?');">
-        <button type="submit" class="btn btn-danger">Supprimer la campagne</button>
+    <form method="POST" action="{{ url_for('campaigns.duplicate', campaign_id=campaign.id) }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline">Dupliquer</button>
+    </form>
+    {% if campaign.status == 'scheduled' %}
+    <form method="POST" action="{{ url_for('campaigns.cancel', campaign_id=campaign.id) }}" class="inline"
+          onsubmit="return confirm('Annuler cette campagne ? Les crédits réservés vous seront rendus.');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger">Annuler l'envoi</button>
+    </form>
+    {% endif %}
+    {% if campaign.status == 'cancelled' %}
+    <form method="POST" action="{{ url_for('campaigns.delete', campaign_id=campaign.id) }}" class="inline"
+          onsubmit="return confirm('Supprimer cette campagne annulée ?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline">Supprimer</button>
     </form>
     {% endif %}
 </div>

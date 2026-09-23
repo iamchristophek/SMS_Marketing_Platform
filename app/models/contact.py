@@ -77,5 +77,31 @@ class Contact(db.Model):
         name = " ".join(part for part in [self.first_name, self.last_name] if part)
         return name or self.phone_e164
 
+    @property
+    def operator(self):
+        from app.services.phone import detect_operator
+
+        return detect_operator(self.phone_e164)
+
+    @property
+    def operator_label(self):
+        from app.services.phone import OPERATOR_LABELS
+
+        return OPERATOR_LABELS.get(self.operator, self.operator)
+
+    @property
+    def phone_display(self):
+        from app.services.phone import format_for_display
+
+        return format_for_display(self.phone_e164)
+
+    def set_consent(self, given: bool):
+        """Enregistre le consentement marketing et sa date (preuve)."""
+        if given and not self.consent_given:
+            self.consent_given_at = utcnow()
+        elif not given:
+            self.consent_given_at = None
+        self.consent_given = given
+
     def __repr__(self):
         return f"<Contact {self.phone_e164}>"

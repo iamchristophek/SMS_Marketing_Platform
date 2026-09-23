@@ -63,28 +63,28 @@ Gunicorn, worker et beat Celery, navigateur Chromium.
 ## P1 — Backend client et tableau de bord
 
 ### Contacts
-- [ ] Modifier un contact (nom, numéro, email, groupes, consentement)
-- [ ] Ajouter ou retirer des contacts existants d'un groupe
-- [ ] Rechercher et filtrer les contacts (nom, numéro, groupe, statut)
-- [ ] Consentement marketing : case dans le formulaire, colonne `consent` à
+- [x] Modifier un contact (nom, numéro, email, groupes, consentement)
+- [x] Ajouter ou retirer des contacts existants d'un groupe
+- [x] Rechercher et filtrer les contacts (nom, numéro, groupe, statut)
+- [x] Consentement marketing : case dans le formulaire, colonne `consent` à
   l'import CSV, affichage et date *(repris de `main`)*
-- [ ] Opérateur détecté automatiquement (Orange 07, MTN 05, Moov 01 sur le plan
+- [x] Opérateur détecté automatiquement (Orange 07, MTN 05, Moov 01 sur le plan
   à 10 chiffres) et affiché *(repris de `main`, préfixes mis à jour)*
-- [ ] Réabonner un contact désabonné, uniquement sur action explicite
-- [ ] Exporter les contacts en CSV
+- [x] Réabonner un contact désabonné, uniquement sur action explicite
+- [x] Exporter les contacts en CSV
 
 ### Modèles de messages *(repris de `main`)*
-- [ ] Créer, modifier et supprimer des modèles (promotionnel, transactionnel, informatif)
-- [ ] Choisir un modèle dans le formulaire de campagne
+- [x] Créer, modifier et supprimer des modèles (promotionnel, transactionnel, informatif)
+- [x] Choisir un modèle dans le formulaire de campagne
 
 ### Campagnes
-- [ ] Aperçu avant envoi : nombre de destinataires, segments, encodage, coût,
+- [x] Aperçu avant envoi : nombre de destinataires, segments, encodage, coût,
   solde après envoi *(repris de `main` : écran de confirmation)*
-- [ ] Refuser une campagne sans destinataire
-- [ ] Option « contacts ayant donné leur consentement uniquement »
-- [ ] Détail de campagne : liste des messages (numéro, statut, erreur)
-- [ ] Libellés de statut en français
-- [ ] Personnalisation `{prenom}` / `{nom}` dans le message
+- [x] Refuser une campagne sans destinataire
+- [x] Option « contacts ayant donné leur consentement uniquement »
+- [x] Détail de campagne : liste des messages (numéro, statut, erreur)
+- [x] Libellés de statut en français
+- [x] Personnalisation `{prenom}` / `{nom}` dans le message
 
 ### Tableau de bord et statistiques
 - [ ] SMS envoyés ce mois-ci et crédits consommés ce mois-ci
@@ -113,6 +113,23 @@ Gunicorn, worker et beat Celery, navigateur Chromium.
   fournisseur. Elle ne traite plus que les paiements du fournisseur actif.
 - [x] Compteur de caractères du formulaire de campagne aligné sur le calcul
   serveur (GSM-7/UCS-2) et signalant les caractères qui coûtent cher
+- [x] **Trois formulaires cassés en production** : supprimer un contact, un
+  groupe ou une campagne envoyait un POST sans jeton CSRF (erreur 400). Les
+  tests ne le voyaient pas car ils désactivent CSRF. Un test vérifie
+  désormais que chaque formulaire POST de l'application porte un jeton.
+- [x] **Lignes fixes (27, 25, 21)** : numéros valides mais qui ne reçoivent pas
+  de SMS. Ils sont marqués « Fixe » et exclus des campagnes (crédits gaspillés sinon).
+- [x] **Brouillons envoyables gratuitement** : le worker acceptait d'envoyer une
+  campagne en brouillon, sans crédits réservés. Seules les campagnes
+  confirmées (planifiées) sont envoyées.
+- [x] **Destinataires ajoutés après la confirmation envoyés sans être facturés** :
+  la liste est désormais figée à la confirmation (un SMS « en attente » par
+  destinataire, texte personnalisé et coût exact). Un contact qui envoie STOP
+  entre-temps est retiré à l'envoi et ses crédits sont rendus.
+- [x] API `POST /campaigns` : une date `scheduled_at` invalide était vérifiée après
+  la réservation des crédits ; validation désormais faite avant toute écriture.
+- [x] Annuler une campagne planifiée (crédits rendus) et dupliquer une campagne
+- [x] Import CSV : séparateur point-virgule (Excel en français) détecté automatiquement
 
 ## P1 — Sécurité et exploitation
 

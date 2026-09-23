@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Aperçu — {{ campaign.name }}{% endblock %}
+{% block content %}
+<div class="flex-between">
+    <h1>{{ campaign.name }}</h1>
+    <span class="status-pill status-draft">{{ campaign.status|campaign_status }}</span>
+</div>
+<p class="text-muted">Étape 2 sur 2 — vérifiez puis confirmez. Aucun SMS n'est envoyé et aucun crédit n'est débité avant la confirmation.</p>
+
+<div class="grid grid-4 mb-2">
+    <div class="card stat"><div class="value">{{ estimate.recipients|number }}</div><div class="label">Destinataires</div></div>
+    <div class="card stat"><div class="value">{% if estimate.segments_min == estimate.segments_max %}{{ estimate.segments_max }}{% else %}{{ estimate.segments_min }}–{{ estimate.segments_max }}{% endif %}</div><div class="label">SMS par destinataire</div></div>
+    <div class="card stat"><div class="value">{{ estimate.credits|number }}</div><div class="label">Crédits nécessaires</div></div>
+    <div class="card stat"><div class="value {{ 'text-error' if balance_after < 0 }}">{{ balance_after|number }}</div><div class="label">Solde après envoi</div></div>
+</div>
+
+{% if estimate.recipients == 0 %}
+<div class="alert alert-error">Aucun destinataire ne recevra cette campagne. Ajoutez des contacts, choisissez un autre groupe
+    {% if campaign.consent_only %}ou décochez « uniquement les contacts consentants »{% endif %}.</div>
+{% elif balance_after < 0 %}
+<div class="alert alert-error">Crédits insuffisants : il vous manque {{ (-balance_after)|number }} crédits.
+    <a href="{{ url_for('billing.index') }}">Recharger mon compte</a></div>
+{% endif %}
+
+{% if estimate.encoding == "UCS-2" %}
+<div class="alert alert-warning">
+    Ce message contient des caractères spéciaux ({{ estimate.non_gsm_chars|join(' ') if estimate.non_gsm_chars else "dans les prénoms/noms" }}) :
+    il est envoyé en UCS-2, soit 70 caractères par SMS au lieu de 160. Remplacez-les (ex. ç → c, ’ → ') pour réduire le coût.
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>Message</h2>
+    {% if estimate.sample %}
+    {% for contact, text in estimate.sample %}
+    <div class="sms-preview">
+        <div class="sms-meta">Pour {{ contact.full_name }} — {{ contact.phone_display }}</div>
+        <div class="sms-bubble">{{ text }}</div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="sms-bubble">{{ campaign.message_body }}</div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Détails</h2>
+    <p><strong>Destinataires :</strong> {{ campaign.group.name if campaign.group else "Tous mes contacts" }}
+        {% if campaign.consent_only %}— uniquement avec consentement{% endif %}</p>
+    <p><strong>Envoi :</strong>
+        {% if campaign.scheduled_at %}planifié le {{ campaign.scheduled_at.strftime('%d/%m/%Y à %H:%M') }}{% else %}immédiat, dès la confirmation{% endif %}</p>
+    {% set excluded = estimate.excluded_opted_out + estimate.excluded_fixed + estimate.excluded_no_consent %}
+    {% if excluded %}
+    <p><strong>Contacts écartés :</strong>
+        {% if estimate.excluded_opted_out %}{{ estimate.excluded_opted_out }} désabonné(s) (STOP) ; {% endif %}
+        {% if estimate.excluded_fixed %}{{ estimate.excluded_fixed }} ligne(s) fixe(s), qui ne reçoivent pas de SMS ; {% endif %}
+        {% if estimate.excluded_no_consent %}{{ estimate.excluded_no_consent }} sans consentement.{% endif %}
+    </p>
+    {% endif %}
+</div>
+
+<div class="actions">
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <button type="submit" class="btn" {{ 'disabled' if estimate.recipients == 0 or balance_after < 0 }}>
+            {% if campaign.scheduled_at %}Confirmer et planifier{% else %}Confirmer et envoyer maintenant{% endif %}
+        </button>
+    </form>
+    <a href="{{ url_for('campaigns.edit', campaign_id=campaign.id) }}" class="btn btn-outline">Modifier</a>
+    <form method="POST" action="{{ url_for('campaigns.delete', campaign_id=campaign.id) }}" class="inline"
+          onsubmit="return confirm('Supprimer ce brouillon ?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline">Supprimer le brouillon</button>
+    </form>
+</div>
+{% endblock %}

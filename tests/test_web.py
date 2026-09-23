@@ -79,6 +79,12 @@ def test_campaign_sent_immediately_from_web(auth_client, db, business):
     )
     assert resp.status_code == 302
     campaign = Campaign.query.one()
+    assert campaign.status == Campaign.STATUS_DRAFT
+    assert resp.headers["Location"].endswith(f"/campaigns/{campaign.id}/confirm")
+
+    resp = auth_client.post(f"/campaigns/{campaign.id}/confirm")
+    assert resp.status_code == 302
+    db.session.refresh(campaign)
     assert campaign.status == Campaign.STATUS_SENT
     assert campaign.total_sent == 1
     assert auth_client.get(f"/campaigns/{campaign.id}").status_code == 200
@@ -126,27 +132,37 @@ def test_buy_package_with_manual_provider_waits_for_admin(auth_client, db, busin
     assert "Mobile Money".encode() in resp.data
 
 
-def test_delete_scheduled_campaign_refunds_and_keeps_ledger(auth_client, db, business, user):
+def test_cancel_then_delete_scheduled_campaign_refunds_and_keeps_ledger(auth_client, db, business, user):
     from app.models.billing import CreditTransaction
 
     db.session.add(Contact(business_id=business.id, phone_e164="+2250712345678"))
     db.session.commit()
     before = business.credit_balance
-    resp = auth_client.post(
+    auth_client.post(
         "/campaigns/new",
         data={"name": "Plus tard", "message": "Bonjour", "group_id": "0", "scheduled_at": "2099-01-01T10:00"},
     )
-    assert resp.status_code == 302
     campaign = Campaign.query.one()
+    auth_client.post(f"/campaigns/{campaign.id}/confirm")
+    db.session.refresh(campaign)
     assert campaign.status == Campaign.STATUS_SCHEDULED
+    db.session.refresh(business)
+    assert business.credit_balance == before - 1
+
+    # Une campagne planifiée ne se supprime pas directement : on l'annule.
+    auth_client.post(f"/campaigns/{campaign.id}/delete")
+    assert Campaign.query.count() == 1
+    auth_client.post(f"/campaigns/{campaign.id}/cancel")
+    db.session.refresh(campaign)
+    assert campaign.status == Campaign.STATUS_CANCELLED
+    db.session.refresh(business)
+    assert business.credit_balance == before
 
     # Les clés étrangères sont appliquées (PRAGMA foreign_keys) : sans
     # détachement du journal, la suppression échouerait comme sur PostgreSQL.
     resp = auth_client.post(f"/campaigns/{campaign.id}/delete")
     assert resp.status_code == 302
     assert Campaign.query.count() == 0
-    db.session.refresh(business)
-    assert business.credit_balance == before
     ledger = CreditTransaction.query.filter_by(business_id=business.id).all()
     assert len(ledger) == 2  # réservation + remboursement conservés
     assert all(t.campaign_id is None for t in ledger)

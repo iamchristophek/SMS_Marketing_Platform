@@ -36,6 +36,7 @@ def create_app(config_name=None, **config_overrides):
     _register_error_handlers(app)
     _register_cli(app)
     _register_hooks(app)
+    _register_template_filters(app)
     _configure_logging(app)
     _init_celery(app)
 
@@ -69,12 +70,14 @@ def _register_blueprints(app):
     from app.blueprints.billing import billing_bp
     from app.blueprints.webhooks import webhooks_bp
     from app.blueprints.api import api_bp
+    from app.blueprints.templates_msg import templates_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(contacts_bp)
     app.register_blueprint(campaigns_bp)
     app.register_blueprint(billing_bp)
+    app.register_blueprint(templates_bp)
     app.register_blueprint(webhooks_bp)
     app.register_blueprint(api_bp, url_prefix="/api/v1")
     # Les webhooks (callbacks externes signés par le fournisseur) ne
@@ -167,6 +170,32 @@ def _register_hooks(app):
     @limiter.exempt
     def healthz():
         return jsonify(status="ok"), 200
+
+
+def _register_template_filters(app):
+    from app.models.campaign import Campaign, Message
+
+    @app.template_filter("campaign_status")
+    def campaign_status(value):
+        return Campaign.STATUS_LABELS.get(value, value)
+
+    @app.template_filter("message_status")
+    def message_status(value):
+        return Message.STATUS_LABELS.get(value, value)
+
+    @app.template_filter("sms_info")
+    def sms_info(value):
+        from app.services.sms.encoding import analyze_message
+
+        return analyze_message(value)
+
+    @app.template_filter("fcfa")
+    def fcfa(value):
+        return f"{int(value or 0):,}".replace(",", " ") + " F CFA"
+
+    @app.template_filter("number")
+    def number(value):
+        return f"{int(value or 0):,}".replace(",", " ")
 
 
 def _init_celery(app):
