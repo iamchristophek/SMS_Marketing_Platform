@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from flask import current_app, jsonify, request
+from flask import jsonify, request
 
 from app.blueprints.webhooks import webhooks_bp
 from app.extensions import db
@@ -9,6 +9,7 @@ from app.models.campaign import Message
 from app.models.contact import Contact
 from app.services import billing_service
 from app.services.payment import get_payment_provider
+from app.services.phone import InvalidPhoneNumberError, normalize_phone
 
 
 def utcnow():
@@ -32,14 +33,19 @@ def sms_delivery_report():
     if message is None:
         return jsonify(status="ignoré, message inconnu"), 200
 
+    was_delivered = message.status == Message.STATUS_DELIVERED
     if status in {"success", "delivered"}:
         message.status = Message.STATUS_DELIVERED
         message.delivered_at = utcnow()
-        if message.campaign:
+        # Les fournisseurs rejouent parfois le même accusé : on ne compte
+        # une livraison qu'une seule fois.
+        if message.campaign and not was_delivered:
             message.campaign.total_delivered = (message.campaign.total_delivered or 0) + 1
     elif status in {"failed", "rejected", "expired"}:
+        if message.campaign and was_delivered and message.campaign.total_delivered:
+            message.campaign.total_delivered -= 1
         message.status = Message.STATUS_UNDELIVERED
-        message.error_message = payload.get("failureReason", "")[:255]
+        message.error_message = str(payload.get("failureReason") or "")[:255]
 
     db.session.commit()
     return jsonify(status="ok"), 200
@@ -55,6 +61,12 @@ def sms_inbound():
     text = str(payload.get("text", "")).strip().upper()
 
     if from_number and text in {"STOP", "ARRET", "ARRÊT"}:
+        # Les contacts sont stockés en E.164 : le numéro reçu peut arriver
+        # sans « + » ou au format local selon l'agrégateur.
+        try:
+            from_number = normalize_phone(str(from_number))
+        except InvalidPhoneNumberError:
+            return jsonify(status="ok"), 200
         contacts = Contact.query.filter_by(phone_e164=from_number).all()
         for contact in contacts:
             contact.opted_out = True

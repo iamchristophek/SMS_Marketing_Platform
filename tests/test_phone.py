@@ -35,3 +35,9 @@ def test_normalize_generic_international_number():
 
 def test_format_for_display():
     assert format_for_display("+2250712345678") == "07 12 34 56 78"
+
+
+@pytest.mark.parametrize("raw", ["0812345678", "08 12 34 56 78", "+0812345678"])
+def test_local_number_with_invalid_prefix_is_rejected(raw):
+    with pytest.raises(InvalidPhoneNumberError):
+        normalize_phone(raw)

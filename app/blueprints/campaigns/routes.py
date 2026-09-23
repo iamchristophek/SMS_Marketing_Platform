@@ -6,6 +6,7 @@ from flask_login import current_user, login_required
 from app.blueprints.campaigns import campaigns_bp
 from app.blueprints.campaigns.forms import CampaignForm
 from app.extensions import db
+from app.models.billing import CreditTransaction
 from app.models.campaign import Campaign
 from app.models.contact import ContactGroup
 from app.services import campaign_service
@@ -108,6 +109,11 @@ def delete(campaign_id):
             campaign.id,
             f"Annulation campagne « {campaign.name} »",
         )
+    # Le journal des crédits est conservé (source de vérité comptable) :
+    # on détache les transactions de la campagne avant de la supprimer.
+    CreditTransaction.query.filter_by(campaign_id=campaign.id).update(
+        {CreditTransaction.campaign_id: None}, synchronize_session=False
+    )
     db.session.delete(campaign)
     db.session.commit()
     flash("Campagne supprimée avec succès.", "info")

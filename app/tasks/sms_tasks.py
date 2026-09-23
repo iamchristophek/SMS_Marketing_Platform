@@ -12,24 +12,28 @@ logger = logging.getLogger("tasks.sms")
 
 
 @celery_app.task(name="app.tasks.sms_tasks.send_campaign", bind=True, max_retries=3, default_retry_delay=30)
-def send_campaign(self, campaign_id: int):
+def send_campaign(self, campaign_id: int, resume: bool = False):
     """Envoie une campagne (immédiatement ou parce que son heure planifiée
-    est arrivée). Les échecs réseau transitoires déclenchent une nouvelle
-    tentative automatique ; les envois individuels déjà réussis ne sont
-    jamais rejoués (idempotence assurée par le statut de chaque Message)."""
+    est arrivée). Les échecs transitoires déclenchent une nouvelle
+    tentative qui REPREND la campagne là où elle s'était arrêtée (les
+    contacts déjà traités ne sont jamais relancés). Une fois les tentatives
+    épuisées, la campagne passe en échec et les crédits non consommés sont
+    remboursés."""
     try:
         return campaign_service.execute_campaign(
             campaign_id,
             sender_id=current_app.config["SMS_SENDER_ID"],
             sms_cost_credits=current_app.config["SMS_COST_CREDITS"],
+            resume=resume,
         )
     except Exception as exc:  # noqa: BLE001 - on journalise puis on relance via Celery
+        db.session.rollback()
         logger.exception("Échec traitement campagne %s", campaign_id)
-        campaign = Campaign.query.get(campaign_id)
-        if campaign:
-            campaign.status = Campaign.STATUS_FAILED
-            db.session.commit()
-        raise self.retry(exc=exc)
+        if self.request.retries >= self.max_retries:
+            campaign_service.mark_campaign_failed(campaign_id)
+            raise
+        # La campagne reste « sending » : la nouvelle tentative la reprend.
+        raise self.retry(exc=exc, args=(campaign_id,), kwargs={"resume": True})
 
 
 @celery_app.task(name="app.tasks.sms_tasks.dispatch_scheduled_campaigns")

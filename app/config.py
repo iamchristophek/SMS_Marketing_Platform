@@ -103,16 +103,20 @@ class BaseConfig:
 class DevelopmentConfig(BaseConfig):
     ENV = "development"
     DEBUG = True
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-me-not-for-production")
     SESSION_COOKIE_SECURE = _bool_env("SESSION_COOKIE_SECURE", False)
     REMEMBER_COOKIE_SECURE = _bool_env("SESSION_COOKIE_SECURE", False)
     CELERY_TASK_ALWAYS_EAGER = _bool_env("CELERY_TASK_ALWAYS_EAGER", True)
+    # Le serveur de développement local tourne en HTTP : générer des URL
+    # https (callbacks de paiement, liens externes) y serait incorrect, et
+    # Flask-WTF exigerait un en-tête Referer HTTPS strict sur chaque POST.
+    PREFERRED_URL_SCHEME = "http"
 
 
 class TestingConfig(BaseConfig):
     ENV = "testing"
     TESTING = True
-    SECRET_KEY = "test-secret-key"
+    SECRET_KEY = "test-secret-key-for-pytest-only-0123456789"
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     WTF_CSRF_ENABLED = False
     SESSION_COOKIE_SECURE = False

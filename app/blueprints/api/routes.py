@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-from flask import current_app, jsonify, request
+from flask import current_app, g, jsonify, request
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
-from flask_login import login_required, current_user as flask_login_current_user
+from flask_login import current_user as flask_login_current_user, login_required
 
 from app.blueprints.api import api_bp
 from app.blueprints.api.auth import api_auth_required, current_business
@@ -61,6 +61,18 @@ def me():
 # ---------------------------------------------------------------------------
 # Contacts
 # ---------------------------------------------------------------------------
+def _optional_str(data, key, max_len):
+    """Chaîne optionnelle nettoyée ; lève ValueError si trop longue (la base
+    PostgreSQL refuserait l'insertion avec une erreur 500)."""
+    value = data.get(key)
+    if value is None:
+        return None
+    value = str(value).strip()
+    if len(value) > max_len:
+        raise ValueError(f"Le champ '{key}' dépasse {max_len} caractères")
+    return value or None
+
+
 def _contact_to_dict(contact: Contact):
     return {
         "id": contact.id,
@@ -105,12 +117,19 @@ def create_contact():
     if Contact.query.filter_by(business_id=business.id, phone_e164=phone).first():
         return jsonify(error="Un contact avec ce numéro existe déjà"), 409
 
+    try:
+        first_name = _optional_str(data, "first_name", 80)
+        last_name = _optional_str(data, "last_name", 80)
+        email = _optional_str(data, "email", 120)
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+
     contact = Contact(
         business_id=business.id,
-        first_name=data.get("first_name"),
-        last_name=data.get("last_name"),
+        first_name=first_name,
+        last_name=last_name,
         phone_e164=phone,
-        email=data.get("email"),
+        email=email,
     )
     db.session.add(contact)
     db.session.commit()
@@ -208,15 +227,26 @@ def create_campaign():
     message_body = (data.get("message") or "").strip()
     if not name or not message_body:
         return jsonify(error="Les champs 'name' et 'message' sont requis"), 400
+    if len(name) > 120:
+        return jsonify(error="Nom de campagne trop long (120 caractères maximum)"), 400
+    if len(message_body) > 640:
+        return jsonify(error="Message trop long (640 caractères maximum)"), 400
 
     group_id = data.get("group_id")
     if group_id and not ContactGroup.query.filter_by(id=group_id, business_id=business.id).first():
         return jsonify(error="Groupe introuvable"), 404
 
-    owner = User.query.filter_by(business_id=business.id, role=User.ROLE_OWNER).first()
+    # Auteur de la campagne : l'utilisateur du jeton JWT, sinon (clé API)
+    # le propriétaire du compte entreprise.
+    author = getattr(g, "current_user", None)
+    if author is None:
+        author = User.query.filter_by(business_id=business.id, role=User.ROLE_OWNER).first()
+    if author is None:
+        return jsonify(error="Aucun utilisateur propriétaire associé à ce compte entreprise"), 409
+
     campaign = Campaign(
         business_id=business.id,
-        created_by_id=(flask_login_current_user.id if flask_login_current_user.is_authenticated else owner.id),
+        created_by_id=author.id,
         name=name,
         message_body=message_body,
         group_id=group_id,
@@ -299,7 +329,7 @@ def list_api_keys():
 @login_required
 def create_api_key():
     data = request.get_json(silent=True) or {}
-    name = (data.get("name") or "Clé API").strip()
+    name = (str(data.get("name") or "").strip() or "Clé API")[:80]
     api_key, raw_key = ApiKey.generate(flask_login_current_user.business_id, name)
     db.session.add(api_key)
     db.session.commit()

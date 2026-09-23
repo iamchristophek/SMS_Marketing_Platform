@@ -46,7 +46,11 @@ class CreditTransaction(db.Model):
     balance_after = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(255))
 
-    campaign_id = db.Column(db.Integer, db.ForeignKey("campaigns.id"), nullable=True)
+    # SET NULL : le journal comptable doit survivre à la suppression d'une
+    # campagne (brouillon/planifiée annulée) — il reste la source de vérité.
+    campaign_id = db.Column(
+        db.Integer, db.ForeignKey("campaigns.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     payment_id = db.Column(db.Integer, db.ForeignKey("payments.id"), nullable=True)
 
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)

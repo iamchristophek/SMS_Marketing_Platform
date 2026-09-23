@@ -1,4 +1,4 @@
-from app.models.user import Business, User
+from app.models.user import User
 
 
 def test_register_creates_business_and_user(client, db):

@@ -7,6 +7,7 @@ from flask_login import current_user, login_required
 from app.blueprints.contacts import contacts_bp
 from app.blueprints.contacts.forms import ContactForm, GroupForm, ImportContactsForm
 from app.extensions import db
+from app.models.campaign import Campaign
 from app.models.contact import Contact, ContactGroup
 from app.services.phone import InvalidPhoneNumberError, normalize_phone
 
@@ -115,6 +116,24 @@ def delete_group(group_id):
     group = ContactGroup.query.filter_by(
         id=group_id, business_id=current_user.business_id
     ).first_or_404()
+
+    # Supprimer le groupe ciblé par une campagne encore à envoyer la ferait
+    # basculer sur « tous les contacts » : on refuse.
+    active = Campaign.query.filter(
+        Campaign.group_id == group.id,
+        Campaign.status.in_(Campaign.ACTIVE_STATUSES + (Campaign.STATUS_SENDING,)),
+    ).count()
+    if active:
+        flash(
+            "Ce groupe est ciblé par une campagne non encore envoyée : "
+            "supprimez ou modifiez d'abord cette campagne.",
+            "error",
+        )
+        return redirect(url_for("contacts.groups"))
+
+    Campaign.query.filter_by(group_id=group.id).update(
+        {Campaign.group_id: None}, synchronize_session=False
+    )
     db.session.delete(group)
     db.session.commit()
     flash("Groupe supprimé.", "info")
@@ -157,10 +176,12 @@ def import_contacts():
 
             contact = Contact(
                 business_id=current_user.business_id,
-                first_name=(row.get("first_name") or row.get("prenom") or "").strip() or None,
-                last_name=(row.get("last_name") or row.get("nom") or "").strip() or None,
+                # Tronqué à la taille des colonnes (PostgreSQL refuse les
+                # valeurs trop longues, contrairement à SQLite).
+                first_name=(row.get("first_name") or row.get("prenom") or "").strip()[:80] or None,
+                last_name=(row.get("last_name") or row.get("nom") or "").strip()[:80] or None,
                 phone_e164=phone,
-                email=(row.get("email") or "").strip() or None,
+                email=(row.get("email") or "").strip()[:120] or None,
             )
             if target_group:
                 contact.groups.append(target_group)

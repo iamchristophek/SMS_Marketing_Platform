@@ -45,10 +45,10 @@ def normalize_phone(raw_number: str, default_country_code: str = CI_COUNTRY_CODE
             return f"+{digits}"
 
     # Numéro international générique (autre pays) : on exige un E.164
-    # plausible (8 à 15 chiffres après le +).
-    if digits.startswith("+"):
-        digits = digits[1:]
-    if 8 <= len(digits) <= 15 and digits.isdigit():
+    # plausible (8 à 15 chiffres après le +). Un numéro commençant par 0 est
+    # un numéro local (aucun indicatif pays ne commence par 0) : s'il n'a pas
+    # été reconnu comme ivoirien ci-dessus, il est invalide.
+    if not digits.startswith("0") and 8 <= len(digits) <= 15 and digits.isdigit():
         return f"+{digits}"
 
     raise InvalidPhoneNumberError(f"Numéro de téléphone invalide : {raw_number!r}")

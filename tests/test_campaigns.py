@@ -96,3 +96,84 @@ def test_execute_campaign_sends_via_console_provider(app, db, business, user):
     assert len(messages) == 1
     assert messages[0].status == Message.STATUS_SENT
     assert messages[0].provider == "console"
+
+
+class _FlakyProvider:
+    """Fournisseur qui lève une exception (panne réseau) sur certains appels."""
+
+    name = "flaky"
+
+    def __init__(self, fail_calls):
+        self.fail_calls = set(fail_calls)
+        self.calls = []
+
+    def send(self, to, body, sender_id):
+        from app.services.sms.base import SmsSendResult
+
+        self.calls.append(to)
+        if len(self.calls) in self.fail_calls:
+            raise ConnectionError("réseau indisponible")
+        return SmsSendResult(success=True, provider="flaky", provider_message_id=f"id-{len(self.calls)}")
+
+
+def _scheduled_campaign(db, business, user):
+    campaign = Campaign(
+        business_id=business.id, created_by_id=user.id, name="Promo", message_body="Bonjour !"
+    )
+    db.session.add(campaign)
+    db.session.commit()
+    campaign_service.reserve_credits(campaign, sms_cost_credits=1)
+    campaign.status = Campaign.STATUS_SCHEDULED
+    db.session.commit()
+    return campaign
+
+
+def test_send_campaign_retry_resumes_without_resending(app, db, business, user, monkeypatch):
+    from app.tasks.sms_tasks import send_campaign
+
+    _make_contact(db, business, "+2250712345678")
+    _make_contact(db, business, "+2250712345679")
+    campaign = _scheduled_campaign(db, business, user)
+    provider = _FlakyProvider(fail_calls={2})  # le 2e envoi échoue une fois
+    monkeypatch.setattr(campaign_service, "get_sms_provider", lambda: provider)
+
+    send_campaign.delay(campaign.id)
+
+    db.session.refresh(campaign)
+    assert campaign.status == Campaign.STATUS_SENT
+    assert campaign.total_sent == 2
+    assert Message.query.filter_by(campaign_id=campaign.id).count() == 2
+    # 1er contact envoyé une seule fois, 2e contact : échec puis succès.
+    assert provider.calls.count("+2250712345678") == 1
+    assert len(provider.calls) == 3
+
+
+def test_send_campaign_final_failure_refunds_credits(app, db, business, user, monkeypatch):
+    from app.tasks.sms_tasks import send_campaign
+
+    _make_contact(db, business, "+2250712345678")
+    balance_before = business.credit_balance
+    campaign = _scheduled_campaign(db, business, user)
+    assert business.credit_balance == balance_before - 1
+    provider = _FlakyProvider(fail_calls=range(1, 100))  # panne permanente
+    monkeypatch.setattr(campaign_service, "get_sms_provider", lambda: provider)
+
+    try:
+        send_campaign.delay(campaign.id)
+    except ConnectionError:
+        pass  # en mode eager, l'exception finale remonte à l'appelant
+
+    db.session.refresh(campaign)
+    db.session.refresh(business)
+    assert campaign.status == Campaign.STATUS_FAILED
+    assert business.credit_balance == balance_before
+    assert len(provider.calls) == 1 + send_campaign.max_retries
+
+
+def test_execute_campaign_is_not_run_twice(app, db, business, user):
+    _make_contact(db, business, "+2250712345678")
+    campaign = _scheduled_campaign(db, business, user)
+
+    campaign_service.execute_campaign(campaign.id, sender_id="PMEPMI", sms_cost_credits=1)
+    assert campaign_service.execute_campaign(campaign.id, sender_id="PMEPMI", sms_cost_credits=1) is None
+    assert Message.query.filter_by(campaign_id=campaign.id).count() == 1

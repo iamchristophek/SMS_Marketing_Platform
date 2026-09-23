@@ -21,6 +21,7 @@ def create_app(config_name=None):
     _register_cli(app)
     _register_hooks(app)
     _configure_logging(app)
+    _init_celery(app)
 
     return app
 
@@ -31,8 +32,11 @@ def _init_extensions(app):
     login_manager.init_app(app)
     csrf.init_app(app)
     jwt.init_app(app)
-    if app.config.get("RATELIMIT_ENABLED", True):
-        limiter.init_app(app)
+    # Toujours initialiser le limiteur : Flask-Limiter lit lui-même
+    # RATELIMIT_ENABLED (False en test) et se désactive proprement, alors que
+    # ne pas l'initialiser laisserait les décorateurs @limiter.limit attachés
+    # à une extension sans application.
+    limiter.init_app(app)
 
     from app.models.user import User
 
@@ -66,6 +70,10 @@ def _register_blueprints(app):
     # SAUF les routes de gestion des clés API qui s'appuient sur la
     # session de connexion web et doivent rester protégées par CSRF.
     csrf.exempt(webhooks_bp)
+    # Les callbacks des fournisseurs (SMS, Mobile Money) proviennent d'un
+    # petit nombre d'IP et peuvent arriver en rafale (accusés de livraison
+    # d'une campagne entière) : la limite par défaut par IP les rejetterait.
+    limiter.exempt(webhooks_bp)
 
 
 def _register_error_handlers(app):
@@ -113,8 +121,16 @@ def _register_hooks(app):
         return response
 
     @app.route("/healthz")
+    @limiter.exempt
     def healthz():
         return jsonify(status="ok"), 200
+
+
+def _init_celery(app):
+    from app.tasks import make_celery
+    from app.tasks import sms_tasks  # noqa: F401 - enregistre les tâches auprès de Celery
+
+    make_celery(app)
 
 
 def _configure_logging(app):

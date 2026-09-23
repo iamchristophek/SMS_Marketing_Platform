@@ -22,7 +22,7 @@ class ApiKey(db.Model):
     business_id = db.Column(db.Integer, db.ForeignKey("businesses.id"), nullable=False, index=True)
 
     name = db.Column(db.String(80), nullable=False)
-    key_prefix = db.Column(db.String(10), nullable=False)
+    key_prefix = db.Column(db.String(20), nullable=False)  # « pmesms_ » + 7 caractères
     key_hash = db.Column(db.String(64), nullable=False, unique=True, index=True)
 
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)

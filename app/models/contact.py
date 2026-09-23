@@ -9,8 +9,12 @@ def utcnow():
 
 contact_group_members = db.Table(
     "contact_group_members",
-    db.Column("contact_id", db.Integer, db.ForeignKey("contacts.id"), primary_key=True),
-    db.Column("group_id", db.Integer, db.ForeignKey("contact_groups.id"), primary_key=True),
+    db.Column(
+        "contact_id", db.Integer, db.ForeignKey("contacts.id", ondelete="CASCADE"), primary_key=True
+    ),
+    db.Column(
+        "group_id", db.Integer, db.ForeignKey("contact_groups.id", ondelete="CASCADE"), primary_key=True
+    ),
 )
 
 

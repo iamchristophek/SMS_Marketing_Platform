@@ -38,7 +38,9 @@ class Campaign(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     business_id = db.Column(db.Integer, db.ForeignKey("businesses.id"), nullable=False, index=True)
     created_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    group_id = db.Column(db.Integer, db.ForeignKey("contact_groups.id"), nullable=True)
+    group_id = db.Column(
+        db.Integer, db.ForeignKey("contact_groups.id", ondelete="SET NULL"), nullable=True
+    )
 
     name = db.Column(db.String(120), nullable=False)
     message_body = db.Column(db.String(640), nullable=False)  # jusqu'à 4 segments SMS
@@ -96,9 +98,14 @@ class Message(db.Model):
     STATUS_UNDELIVERED = "undelivered"
 
     id = db.Column(db.Integer, primary_key=True)
-    campaign_id = db.Column(db.Integer, db.ForeignKey("campaigns.id"), nullable=True, index=True)
+    campaign_id = db.Column(
+        db.Integer, db.ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=True, index=True
+    )
     business_id = db.Column(db.Integer, db.ForeignKey("businesses.id"), nullable=False, index=True)
-    contact_id = db.Column(db.Integer, db.ForeignKey("contacts.id"), nullable=True)
+    # SET NULL : l'historique d'envoi est conservé si le contact est supprimé.
+    contact_id = db.Column(
+        db.Integer, db.ForeignKey("contacts.id", ondelete="SET NULL"), nullable=True, index=True
+    )
 
     phone_e164 = db.Column(db.String(20), nullable=False)
     body = db.Column(db.String(640), nullable=False)
