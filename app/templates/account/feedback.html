@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_form_errors.html" import form_errors %}
+{% block title %}Donner mon avis{% endblock %}
+{% block content %}
+<div class="card card-narrow-lg">
+    <h1>Donner mon avis</h1>
+    <p class="text-muted">Une difficulté, une idée, un bug ? Dites-le-nous : chaque retour est lu par l'équipe.</p>
+    {{ form_errors(form) }}
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">{{ form.rating.label }} {{ form.rating(class="form-control") }}</div>
+        <div class="form-group">{{ form.message.label }} {{ form.message(class="form-control", rows=6) }}</div>
+        {{ form.submit(class="btn") }}
+    </form>
+</div>
+{% endblock %}

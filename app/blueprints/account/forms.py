@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, Optional
 
 
@@ -20,3 +20,16 @@ class ApiKeyForm(FlaskForm):
     key_name = StringField("Nom de la clé", validators=[DataRequired(), Length(max=80)],
                            description="Ex. : Site e-commerce, ERP")
     create = SubmitField("Créer une clé")
+
+
+class FeedbackForm(FlaskForm):
+    rating = SelectField(
+        "Votre note",
+        choices=[(5, "5 — Excellent"), (4, "4 — Bien"), (3, "3 — Moyen"), (2, "2 — Décevant"), (1, "1 — Mauvais")],
+        coerce=int,
+        default=5,
+    )
+    message = TextAreaField(
+        "Votre avis ou suggestion", validators=[DataRequired(message="Écrivez quelques mots"), Length(max=2000)]
+    )
+    submit = SubmitField("Envoyer")

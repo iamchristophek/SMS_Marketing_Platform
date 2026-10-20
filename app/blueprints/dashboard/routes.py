@@ -42,3 +42,18 @@ def home():
         has_campaigns=bool(recent or drafts or upcoming),
         low_balance=business.credit_balance < current_app.config["LOW_BALANCE_THRESHOLD"],
     )
+
+
+@dashboard_bp.route("/impact")
+def impact():
+    return render_template("impact.html", stats=stats_service.impact_stats())
+
+
+@dashboard_bp.route("/cgu")
+def terms():
+    return render_template("legal/terms.html")
+
+
+@dashboard_bp.route("/confidentialite")
+def privacy():
+    return render_template("legal/privacy.html")

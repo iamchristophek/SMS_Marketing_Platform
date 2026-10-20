@@ -78,6 +78,10 @@
 
     <footer>
         &copy; {{ 2026 }} Baoryx Connect — Plateforme de marketing SMS pour les PME/PMI de Côte d'Ivoire.
+        <br><a href="{{ url_for('dashboard.terms') }}">Conditions d'utilisation</a> ·
+        <a href="{{ url_for('dashboard.privacy') }}">Confidentialité</a> ·
+        <a href="{{ url_for('dashboard.impact') }}">Impact</a>
+        {% if current_user.is_authenticated %} · <a href="{{ url_for('account.feedback') }}">Donner mon avis</a>{% endif %}
     </footer>
 </body>
 </html>

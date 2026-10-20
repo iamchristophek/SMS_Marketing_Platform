@@ -188,7 +188,7 @@ def test_rename_group(auth_client, db, contacts):
 PAGES_WITH_FORMS = [
     "/compte/", "/modeles/new",
     "/contacts/", "/contacts/new", "/contacts/groups", "/contacts/import", "/campaigns/new",
-    "/billing/", "/change-password",
+    "/billing/", "/change-password", "/compte/avis",
 ]
 
 

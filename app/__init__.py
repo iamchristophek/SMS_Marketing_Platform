@@ -148,9 +148,10 @@ def _register_error_handlers(app):
 
 
 def _register_cli(app):
-    from app.cli import register_cli_commands
+    from app.cli import register_beta_commands, register_cli_commands
 
     register_cli_commands(app)
+    register_beta_commands(app)
 
 
 def _is_insecure_transport(app):

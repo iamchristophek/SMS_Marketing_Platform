@@ -138,3 +138,32 @@ def nice_ticks(maximum: int, count: int = 4):
     step = max(1, int(step)) if step >= 1 else 1
     top = step * -(-maximum // step)
     return list(range(0, int(top) + 1, int(step)))
+
+
+def impact_stats(active_days=30):
+    """Chiffres agrégés de la plateforme (page publique « Impact », dossier
+    du concours). Aucune donnée personnelle ni nom d'entreprise."""
+    from app.models.feedback import Feedback
+    from app.models.user import Business
+
+    since = datetime.now(timezone.utc) - timedelta(days=active_days)
+    sent_statuses = [Message.STATUS_SENT, Message.STATUS_DELIVERED, Message.STATUS_UNDELIVERED]
+    sent = Message.query.filter(Message.status.in_(sent_statuses))
+    ratings = db.session.query(db.func.avg(Feedback.rating), db.func.count(Feedback.id)).one()
+    return {
+        "businesses": Business.query.count(),
+        "active_businesses": db.session.query(db.func.count(db.distinct(Campaign.business_id)))
+        .filter(Campaign.created_at >= since, Campaign.status != Campaign.STATUS_DRAFT)
+        .scalar(),
+        "campaigns": Campaign.query.filter(Campaign.status == Campaign.STATUS_SENT).count(),
+        "sms_sent": sent.count(),
+        "people_reached": db.session.query(db.func.count(db.distinct(Message.phone_e164)))
+        .filter(Message.status.in_(sent_statuses))
+        .scalar(),
+        "delivered": Message.query.filter_by(status=Message.STATUS_DELIVERED).count(),
+        "contacts": Contact.query.count(),
+        "opt_outs_honored": Contact.query.filter(Contact.opted_out.is_(True)).count(),
+        "avg_rating": round(float(ratings[0]), 1) if ratings[0] is not None else None,
+        "feedback_count": ratings[1],
+        "active_days": active_days,
+    }

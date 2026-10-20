@@ -1,10 +1,11 @@
-from flask import flash, redirect, render_template, url_for
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from app.blueprints.account import account_bp
-from app.blueprints.account.forms import ApiKeyForm, BusinessForm, ProfileForm
+from app.blueprints.account.forms import ApiKeyForm, BusinessForm, FeedbackForm, ProfileForm
 from app.extensions import db
 from app.models.api_key import ApiKey
+from app.models.feedback import Feedback
 from app.models.user import User
 from app.services.phone import InvalidPhoneNumberError, format_for_display, normalize_phone
 
@@ -96,3 +97,23 @@ def revoke_api_key(key_id):
     db.session.commit()
     flash(f"Clé « {api_key.name} » révoquée : elle ne fonctionne plus.", "info")
     return redirect(url_for("account.index"))
+
+
+@account_bp.route("/avis", methods=["GET", "POST"])
+@login_required
+def feedback():
+    form = FeedbackForm()
+    if form.validate_on_submit():
+        db.session.add(
+            Feedback(
+                business_id=current_user.business_id,
+                user_id=current_user.id,
+                rating=form.rating.data,
+                message=form.message.data.strip(),
+                page=(request.referrer or "")[:200] or None,
+            )
+        )
+        db.session.commit()
+        flash("Merci pour votre avis ! Il nous aide à améliorer Baoryx Connect.", "success")
+        return redirect(url_for("dashboard.home"))
+    return render_template("account/feedback.html", form=form)

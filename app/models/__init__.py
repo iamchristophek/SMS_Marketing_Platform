@@ -8,6 +8,7 @@ from app.models.campaign import Campaign, Message
 from app.models.billing import CreditPackage, CreditTransaction, Payment
 from app.models.api_key import ApiKey
 from app.models.template import MessageTemplate
+from app.models.feedback import Feedback
 
 __all__ = [
     "db",
@@ -23,4 +24,5 @@ __all__ = [
     "Payment",
     "ApiKey",
     "MessageTemplate",
+    "Feedback",
 ]

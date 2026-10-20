@@ -213,3 +213,22 @@ def register_cli_commands(app):
         user.set_password(password)
         db.session.commit()
         click.echo(f"Mot de passe de « {username} » réinitialisé.")
+
+
+def register_beta_commands(app):
+    @app.cli.command("impact")
+    def impact():
+        """Chiffres d'impact agrégés (dossier du concours)."""
+        from app.services.stats_service import impact_stats
+
+        for key, value in impact_stats().items():
+            click.echo(f"{key:20} {value}")
+
+    @app.cli.command("feedback")
+    @click.option("--limit", default=30)
+    def feedback_list(limit):
+        """Derniers avis laissés dans l'application."""
+        from app.models.feedback import Feedback
+
+        for f in Feedback.query.order_by(Feedback.created_at.desc()).limit(limit):
+            click.echo(f"[{f.created_at:%d/%m %H:%M}] {f.rating}/5 {f.business.name} : {f.message}")
