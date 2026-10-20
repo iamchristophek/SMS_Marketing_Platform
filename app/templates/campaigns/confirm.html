@@ -14,6 +14,12 @@
     <div class="card stat"><div class="value {{ 'text-error' if balance_after < 0 }}">{{ balance_after|number }}</div><div class="label">Solde après envoi</div></div>
 </div>
 
+{% if check.blocked %}
+<div class="alert alert-error">Ce message ne peut pas être envoyé, il ressemble à une arnaque : {{ check.blocked|join(' ; ') }}. Modifiez-le.</div>
+{% endif %}
+{% for w in check.warnings %}
+<div class="alert alert-warning">Attention : {{ w }}.</div>
+{% endfor %}
 {% if estimate.recipients == 0 %}
 <div class="alert alert-error">Aucun destinataire ne recevra cette campagne. Ajoutez des contacts, choisissez un autre groupe
     {% if campaign.consent_only %}ou décochez « uniquement les contacts consentants »{% endif %}.</div>

@@ -41,7 +41,7 @@ Point de départ : 20 octobre, soit 3 semaines. Des commerces et PME sont prêts
 
 ### Semaine 2 (27 oct.–2 nov.) — l'innovation visible
 - [x] Assistant de rédaction IA (3 propositions de SMS courts, sans caractères coûteux, avec STOP) — `app/services/ai_writer.py`, bouton dans « Nouvelle campagne », activé par `ANTHROPIC_API_KEY`, 20 req/h par entreprise
-- [ ] Détection de fraude / usurpation avant envoi (faux Orange Money, demandes de code, liens suspects)
+- [x] Détection de fraude / usurpation avant envoi (faux Orange Money, demandes de code, liens suspects) — `app/services/content_check.py` : blocage au lancement (web et API), avertissements sur l'aperçu
 - [ ] Indicateurs d'impact pour le jury (PME actives, SMS envoyés, clients touchés)
 - [ ] Formulaire de retour dans l'application
 

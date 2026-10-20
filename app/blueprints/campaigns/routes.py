@@ -7,7 +7,7 @@ from app.extensions import db, limiter
 from app.models.billing import CreditTransaction
 from app.models.campaign import Campaign, Message
 from app.models.template import MessageTemplate
-from app.services import ai_writer, campaign_service, contact_service
+from app.services import ai_writer, campaign_service, contact_service, content_check
 from app.services.billing_service import InsufficientCreditsError
 from app.services.campaign_service import CampaignError
 from app.tasks.sms_tasks import send_campaign
@@ -150,6 +150,7 @@ def confirm(campaign_id):
         "campaigns/confirm.html",
         campaign=campaign,
         estimate=estimate,
+        check=content_check.check_message(campaign.message_body),
         balance=balance,
         balance_after=balance - estimate.credits,
         form=form,

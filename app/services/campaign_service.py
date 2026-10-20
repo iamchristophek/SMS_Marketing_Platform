@@ -20,7 +20,7 @@ from sqlalchemy import or_
 from app.extensions import db
 from app.models.campaign import Campaign, Message
 from app.models.contact import Contact, ContactGroup
-from app.services import billing_service
+from app.services import billing_service, content_check
 from app.services.phone import CI_COUNTRY_CODE, FIXED_PREFIXES
 from app.services.sms import get_sms_provider
 from app.services.sms.encoding import ENCODING_UCS2, analyze_message
@@ -176,6 +176,11 @@ def launch(campaign: Campaign, sms_cost_credits: int, scheduled_at=None):
     if not get_recipients(campaign):
         raise CampaignError(
             "Aucun destinataire : ajoutez des contacts (ou choisissez un autre groupe) avant d'envoyer."
+        )
+    check = content_check.check_message(campaign.message_body)
+    if not check.ok:
+        raise CampaignError(
+            "Envoi refusé, ce message ressemble à une arnaque : " + " ; ".join(check.blocked) + "."
         )
     reserve_credits(campaign, sms_cost_credits)
 
