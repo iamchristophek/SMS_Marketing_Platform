@@ -32,7 +32,7 @@ L'application est écrite en Flask (Python). En production, elle s'appuie sur Po
 - Export CSV (avec les filtres en cours), lisible directement dans Excel.
 - Consentement marketing daté, par contact, à l'import ou en masse.
 - Opérateur détecté automatiquement (plan 2021 : 07 Orange, 05 MTN, 01 Moov). Les lignes fixes (27, 25, 21) sont signalées et exclues des campagnes : elles ne reçoivent pas de SMS.
-- Désabonnement : STOP, ARRET ou ARRÊT reçu sur le webhook des SMS entrants marque le contact `opted_out`. Le réabonnement demande une action explicite.
+- Désabonnement : un SMS entrant commençant par STOP, ARRET ou ARRÊT désabonne le numéro chez l'entreprise qui lui a écrit en dernier (fenêtre `STOP_ATTRIBUTION_DAYS`) ; si aucun envoi récent ne l'identifie, chez toutes. Le réabonnement demande une action explicite.
 
 **Modèles de messages** : messages réutilisables (promotionnel, transactionnel, informatif), sélectionnables dans le formulaire de campagne.
 
@@ -172,6 +172,7 @@ Toutes les variables sont lues dans `app/config.py`. Le profil est choisi par `F
 | `SMS_PROVIDER` | `console`, `africastalking`, `orange` ou `twilio` | `console` |
 | `SMS_SENDER_ID` | Nom d'expéditeur affiché sur les SMS | `BAORYX` |
 | `SMS_WEBHOOK_TOKEN` | Jeton secret des URL de callback SMS. Obligatoire en production avec un vrai fournisseur (16 caractères minimum) | — |
+| `STOP_ATTRIBUTION_DAYS` | Fenêtre (jours) pour attribuer un STOP à l'entreprise qui a écrit en dernier | `30` |
 | `SMS_COST_CREDITS` | Crédits consommés par segment SMS | `1` |
 | `FREE_TRIAL_CREDITS` | Crédits offerts à l'inscription et par `create-admin` | `20` |
 | `LOW_BALANCE_THRESHOLD` | Seuil d'alerte de solde faible sur le tableau de bord | `50` |

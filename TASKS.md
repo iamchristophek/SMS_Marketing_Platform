@@ -157,10 +157,12 @@ Gunicorn, worker et beat Celery, navigateur Chromium.
 - [x] Profil production : refuser les `SECRET_KEY` d'exemple de `.env.example`
 
 - [x] Production : refuse de démarrer avec un vrai fournisseur SMS sans `SMS_WEBHOOK_TOKEN`
-- [ ] Désabonnement STOP : avec un expéditeur (sender ID) partagé, un STOP
-  désabonne le numéro chez **toutes** les entreprises clientes, faute de savoir
-  à laquelle il répond. Acceptable tant que l'expéditeur est commun ; à revoir
-  si chaque entreprise obtient son propre sender ID.
+- [x] Désabonnement STOP : avec l'expéditeur (sender ID) partagé, un STOP désabonnait
+  le numéro chez **toutes** les entreprises. Il ne désabonne plus que chez
+  l'entreprise qui a envoyé le dernier SMS à ce numéro (fenêtre
+  `STOP_ATTRIBUTION_DAYS`, 30 jours) ; sans envoi récent identifiable, il
+  désabonne partout par prudence. « stop svp » est reconnu ; un message qui
+  contient « stop » plus loin ne l'est pas.
 
 ## P2 — Reporté ou plus tard
 

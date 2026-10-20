@@ -9,7 +9,7 @@ from app.extensions import db
 from app.models.billing import Payment
 from app.models.campaign import Message
 from app.models.contact import Contact
-from app.services import billing_service
+from app.services import billing_service, contact_service
 from app.services.payment import get_payment_provider
 from app.services.phone import InvalidPhoneNumberError, normalize_phone
 
@@ -84,20 +84,20 @@ def sms_inbound():
     bonnes pratiques anti-spam."""
     payload = request.form if request.form else (request.get_json(silent=True) or {})
     from_number = payload.get("from") or payload.get("phoneNumber")
-    text = str(payload.get("text", "")).strip().upper()
+    text = str(payload.get("text", ""))
 
-    if from_number and text in {"STOP", "ARRET", "ARRÊT"}:
+    if from_number and contact_service.is_stop_request(text):
         # Les contacts sont stockés en E.164 : le numéro reçu peut arriver
         # sans « + » ou au format local selon l'agrégateur.
         try:
             from_number = normalize_phone(str(from_number))
         except InvalidPhoneNumberError:
             return jsonify(status="ok"), 200
-        contacts = Contact.query.filter_by(phone_e164=from_number).all()
-        for contact in contacts:
-            contact.opted_out = True
-            contact.opted_out_at = utcnow()
+        businesses = contact_service.opt_out_from_inbound(
+            from_number, current_app.config["STOP_ATTRIBUTION_DAYS"]
+        )
         db.session.commit()
+        current_app.logger.info("STOP de %s : désabonné chez %s", from_number, businesses)
 
     return jsonify(status="ok"), 200
 

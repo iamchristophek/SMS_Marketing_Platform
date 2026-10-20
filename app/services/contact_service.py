@@ -152,3 +152,46 @@ def export_csv(contacts):
         ])
     # BOM UTF-8 : Excel affiche correctement les accents.
     return "﻿" + output.getvalue()
+
+
+STOP_KEYWORDS = {"STOP", "ARRET", "ARRÊT"}
+
+
+def is_stop_request(text: str) -> bool:
+    """« STOP », « stop svp », « Arrêt » : le premier mot suffit."""
+    words = (text or "").strip().upper().split()
+    return bool(words) and words[0].strip(".!") in STOP_KEYWORDS
+
+
+def opt_out_from_inbound(phone_e164: str, attribution_days: int = 30):
+    """Désabonne un numéro après un STOP reçu sur l'expéditeur partagé.
+
+    Le STOP répond normalement au dernier SMS reçu : on ne désabonne que
+    chez l'entreprise qui l'a envoyé (dans les `attribution_days` derniers
+    jours). Si aucun envoi récent ne permet de l'identifier, on désabonne
+    chez toutes les entreprises : mieux vaut perdre un contact que
+    continuer à écrire à quelqu'un qui a demandé l'arrêt.
+    Renvoie la liste des business_id concernés (sans commit)."""
+    from datetime import datetime, timedelta, timezone
+
+    from app.models.campaign import Message
+
+    now = datetime.now(timezone.utc)
+    last = (
+        Message.query.filter(
+            Message.phone_e164 == phone_e164,
+            Message.sent_at.isnot(None),
+            Message.sent_at >= now - timedelta(days=attribution_days),
+        )
+        .order_by(Message.sent_at.desc())
+        .first()
+    )
+    query = Contact.query.filter_by(phone_e164=phone_e164)
+    if last is not None:
+        query = query.filter_by(business_id=last.business_id)
+    contacts = query.all()
+    for contact in contacts:
+        if not contact.opted_out:
+            contact.opted_out = True
+            contact.opted_out_at = now
+    return sorted({c.business_id for c in contacts})

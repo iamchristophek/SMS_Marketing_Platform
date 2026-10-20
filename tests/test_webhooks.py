@@ -122,3 +122,48 @@ def test_upload_too_large_is_explained(app, auth_client):
     )
     assert resp.status_code == 413
     assert "trop volumineux".encode() in resp.data
+
+
+def _stop_setup(db):
+    from datetime import datetime, timedelta, timezone
+
+    from app.models.user import Business
+
+    a, b = Business(name="A"), Business(name="B")
+    db.session.add_all([a, b])
+    db.session.commit()
+    ca = Contact(business_id=a.id, phone_e164="+2250712345678")
+    cb = Contact(business_id=b.id, phone_e164="+2250712345678")
+    db.session.add_all([ca, cb])
+    db.session.commit()
+    return a, b, ca, cb, datetime.now(timezone.utc), timedelta
+
+
+def test_stop_only_opts_out_at_last_sender(client, db):
+    a, b, ca, cb, now, td = _stop_setup(db)
+    for biz, when in [(a, now - td(days=3)), (b, now - td(hours=1))]:
+        db.session.add(Message(business_id=biz.id, phone_e164="+2250712345678", body="x",
+                               status=Message.STATUS_SENT, sent_at=when))
+    db.session.commit()
+    client.post("/webhooks/sms/inbound", data={"from": "0712345678", "text": "Stop svp"})
+    db.session.refresh(ca)
+    db.session.refresh(cb)
+    assert cb.opted_out and not ca.opted_out
+
+
+def test_stop_without_recent_message_opts_out_everywhere(client, db):
+    a, b, ca, cb, now, td = _stop_setup(db)
+    db.session.add(Message(business_id=a.id, phone_e164="+2250712345678", body="x",
+                           status=Message.STATUS_SENT, sent_at=now - td(days=90)))
+    db.session.commit()
+    client.post("/webhooks/sms/inbound", data={"from": "0712345678", "text": "ARRÊT"})
+    db.session.refresh(ca)
+    db.session.refresh(cb)
+    assert ca.opted_out and cb.opted_out
+
+
+def test_message_containing_stop_later_is_not_a_stop(client, db):
+    a, b, ca, cb, now, td = _stop_setup(db)
+    client.post("/webhooks/sms/inbound", data={"from": "0712345678", "text": "Merci, ne stop pas !"})
+    db.session.refresh(ca)
+    assert not ca.opted_out

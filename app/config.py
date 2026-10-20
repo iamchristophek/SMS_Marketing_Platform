@@ -75,6 +75,9 @@ class BaseConfig:
     # fournisseur SMS (?token=...) : sans lui, n'importe qui pourrait marquer
     # des SMS comme livrés ou désabonner des numéros.
     SMS_WEBHOOK_TOKEN = os.environ.get("SMS_WEBHOOK_TOKEN", "")
+    # Un STOP désabonne seulement chez l'entreprise qui a envoyé le dernier
+    # SMS à ce numéro dans cette fenêtre (sinon : chez toutes).
+    STOP_ATTRIBUTION_DAYS = int(os.environ.get("STOP_ATTRIBUTION_DAYS", 30))
 
     AT_USERNAME = os.environ.get("AFRICASTALKING_USERNAME")
     AT_API_KEY = os.environ.get("AFRICASTALKING_API_KEY")
