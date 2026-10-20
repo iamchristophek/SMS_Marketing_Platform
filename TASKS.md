@@ -34,7 +34,7 @@ Point de départ : 20 octobre, soit 3 semaines. Des commerces et PME sont prêts
 - [ ] Serveur + nom de domaine, déploiement `docker compose` (HTTPS)
 - [ ] Compte agrégateur SMS (Africa's Talking) et demande de sender ID `BAORYX`
 - [ ] Numéro Mobile Money pour les paiements manuels (`MANUAL_PAYMENT_INSTRUCTIONS`)
-- [ ] Sauvegarde quotidienne de PostgreSQL + alertes d'erreurs (Sentry)
+- [x] Sauvegarde quotidienne de PostgreSQL + alertes d'erreurs (Sentry) — service `backup` (`scripts/backup.sh`, 14 jours dans `./backups`), Sentry si `SENTRY_DSN`. Reste : copier `backups/` hors serveur, créer le compte Sentry
 - [ ] Mot de passe oublié par email
 - [x] Page CGU / confidentialité minimale — `/cgu`, `/confidentialite`, liens en pied de page et à l'inscription
 - [ ] Bêta fermée : 5 à 10 commerces, crédits offerts, aide à l'import des contacts

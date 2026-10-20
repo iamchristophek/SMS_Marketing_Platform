@@ -19,6 +19,7 @@ def create_app(config_name=None, **config_overrides):
     config[config_name].init_app(app)
 
     os.makedirs(app.instance_path, exist_ok=True)
+    _init_sentry(app)
 
     # Derrière un reverse proxy HTTPS (Caddy, Nginx), l'application reçoit
     # du HTTP : ProxyFix lui fait lire X-Forwarded-Proto/For/Host pour
@@ -219,3 +220,19 @@ def _init_celery(app):
 def _configure_logging(app):
     if not app.debug and not app.testing:
         logging.basicConfig(level=logging.INFO)
+
+
+def _init_sentry(app):
+    """Alertes d'erreurs : actif seulement si SENTRY_DSN est défini."""
+    dsn = app.config.get("SENTRY_DSN")
+    if not dsn or app.testing:
+        return
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=dsn,
+        environment=app.config.get("SENTRY_ENVIRONMENT", "production"),
+        traces_sample_rate=0.0,
+        # Numéros de téléphone et contenus de SMS : on n'envoie pas de PII.
+        send_default_pii=False,
+    )

@@ -115,6 +115,10 @@ class BaseConfig:
     ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
     AI_MODEL = os.environ.get("AI_MODEL", "claude-opus-5-5")
 
+    # --- Alertes d'erreurs (Sentry) ---
+    SENTRY_DSN = os.environ.get("SENTRY_DSN")
+    SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "production")
+
     # --- Divers ---
     DEFAULT_COUNTRY_CODE = "225"  # Côte d'Ivoire
     MAIL_SUPPORT_ADDRESS = os.environ.get("MAIL_SUPPORT_ADDRESS", "support@baoryx.ci")
