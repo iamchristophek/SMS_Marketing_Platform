@@ -25,6 +25,31 @@ Légende des priorités :
 
 ---
 
+## Plan concours « Innovateurs technologiques » (11–13 novembre 2026)
+
+Point de départ : 20 octobre, soit 3 semaines. Des commerces et PME sont prêts à tester.
+
+### Semaine 1 (20–26 oct.) — mise en ligne et bêta
+- [ ] Fusionner la PR #1 dans `main`
+- [ ] Serveur + nom de domaine, déploiement `docker compose` (HTTPS)
+- [ ] Compte agrégateur SMS (Africa's Talking) et demande de sender ID `BAORYX`
+- [ ] Numéro Mobile Money pour les paiements manuels (`MANUAL_PAYMENT_INSTRUCTIONS`)
+- [ ] Sauvegarde quotidienne de PostgreSQL + alertes d'erreurs (Sentry)
+- [ ] Mot de passe oublié par email
+- [ ] Page CGU / confidentialité minimale
+- [ ] Bêta fermée : 5 à 10 commerces, crédits offerts, aide à l'import des contacts
+
+### Semaine 2 (27 oct.–2 nov.) — l'innovation visible
+- [ ] Assistant de rédaction IA (3 propositions de SMS courts, sans caractères coûteux, avec STOP)
+- [ ] Détection de fraude / usurpation avant envoi (faux Orange Money, demandes de code, liens suspects)
+- [ ] Indicateurs d'impact pour le jury (PME actives, SMS envoyés, clients touchés)
+- [ ] Formulaire de retour dans l'application
+
+### Semaine 3 (3–10 nov.) — préparation
+- [ ] Gel des fonctionnalités le 6 novembre
+- [ ] Compte et scénario de démonstration (5 min) + vidéo de secours
+- [ ] Dossier : problème, solution, démo, chiffres de la bêta, témoignages, modèle économique, feuille de route
+
 ## P0 — Bloquants constatés en test réel
 
 Test de bout en bout du 23/09/2026 : profil `production`, PostgreSQL, Redis,
