@@ -167,7 +167,7 @@ def _is_insecure_transport(app):
 def _register_hooks(app):
     @app.context_processor
     def inject_transport_warning():
-        return {"insecure_transport": _is_insecure_transport(app)}
+        return {"insecure_transport": _is_insecure_transport(app), "ai_enabled": bool(app.config.get("ANTHROPIC_API_KEY"))}
 
     @app.after_request
     def set_security_headers(response):

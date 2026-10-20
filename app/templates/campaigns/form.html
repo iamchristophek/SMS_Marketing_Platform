@@ -13,6 +13,14 @@
             <div class="help-text">Choisir un modèle remplace le message ci-dessous. <a href="{{ url_for('templates_msg.index') }}">Gérer mes modèles</a></div>
         </div>
         {% endif %}
+        {% if ai_enabled %}
+        <div class="form-group ai-box">
+            <label for="ai-brief">Assistant IA — décrivez votre offre</label>
+            <input type="text" id="ai-brief" class="form-control" maxlength="500" placeholder="Ex. : -20% sur les pagnes ce week-end, boutique à Cocody">
+            <button type="button" class="btn btn-outline" id="ai-btn">Proposer 3 SMS</button>
+            <div id="ai-results" class="help-text"></div>
+        </div>
+        {% endif %}
         <div class="form-group">
             {{ form.message.label }}
             {{ form.message(class="form-control", id="message-field", maxlength=640, rows=5, **{"data-sms-counter": "sms-counter"}) }}
@@ -31,6 +39,34 @@
 <script id="templates-data" type="application/json">{{ templates_by_id|default({})|tojson }}</script>
 <script src="{{ url_for('static', filename='js/sms-counter.js') }}"></script>
 <script>
+    (function () {
+        var btn = document.getElementById('ai-btn');
+        if (!btn) return;
+        var field = document.getElementById('message-field');
+        var out = document.getElementById('ai-results');
+        var token = document.querySelector('input[name="csrf_token"]');
+        btn.addEventListener('click', function () {
+            var body = new FormData();
+            body.append('brief', document.getElementById('ai-brief').value);
+            if (token) body.append('csrf_token', token.value);
+            btn.disabled = true; out.textContent = 'Rédaction en cours…';
+            fetch('{{ url_for("campaigns.ai_suggest") }}', {method: 'POST', body: body, headers: {'X-CSRFToken': token ? token.value : ''}})
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    out.textContent = '';
+                    if (data.error) { out.textContent = data.error; return; }
+                    data.suggestions.forEach(function (s) {
+                        var b = document.createElement('button');
+                        b.type = 'button'; b.className = 'btn btn-outline ai-choice';
+                        b.textContent = s.text + ' (' + s.segments + ' SMS)';
+                        b.addEventListener('click', function () { field.value = s.text; field.dispatchEvent(new Event('input')); });
+                        out.appendChild(b);
+                    });
+                })
+                .catch(function () { out.textContent = "Erreur réseau, réessayez."; })
+                .finally(function () { btn.disabled = false; });
+        });
+    })();
     (function () {
         var picker = document.getElementById('template-picker');
         var field = document.getElementById('message-field');

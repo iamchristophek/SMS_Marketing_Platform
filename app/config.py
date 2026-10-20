@@ -111,6 +111,10 @@ class BaseConfig:
     # Seuil (en crédits) sous lequel le tableau de bord signale un solde faible.
     LOW_BALANCE_THRESHOLD = int(os.environ.get("LOW_BALANCE_THRESHOLD", 50))
 
+    # --- Assistant de rédaction IA (API Claude) ---
+    ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+    AI_MODEL = os.environ.get("AI_MODEL", "claude-opus-5-5")
+
     # --- Divers ---
     DEFAULT_COUNTRY_CODE = "225"  # Côte d'Ivoire
     MAIL_SUPPORT_ADDRESS = os.environ.get("MAIL_SUPPORT_ADDRESS", "support@baoryx.ci")

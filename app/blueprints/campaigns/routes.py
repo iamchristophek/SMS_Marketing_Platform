@@ -1,13 +1,13 @@
-from flask import current_app, flash, redirect, render_template, request, url_for
+from flask import current_app, jsonify, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from app.blueprints.campaigns import campaigns_bp
 from app.blueprints.campaigns.forms import CampaignForm, ConfirmCampaignForm
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models.billing import CreditTransaction
 from app.models.campaign import Campaign, Message
 from app.models.template import MessageTemplate
-from app.services import campaign_service, contact_service
+from app.services import ai_writer, campaign_service, contact_service
 from app.services.billing_service import InsufficientCreditsError
 from app.services.campaign_service import CampaignError
 from app.tasks.sms_tasks import send_campaign
@@ -242,3 +242,17 @@ def delete(campaign_id):
     db.session.commit()
     flash("Campagne supprimée.", "info")
     return redirect(url_for("campaigns.index"))
+
+
+@campaigns_bp.route("/ai-suggest", methods=["POST"])
+@login_required
+@limiter.limit("20 per hour", key_func=lambda: f"ai-{current_user.business_id}")
+def ai_suggest():
+    """Propose 3 SMS à partir d'une courte description de l'offre."""
+    try:
+        suggestions = ai_writer.suggest_messages(
+            request.form.get("brief", ""), current_user.business.name
+        )
+    except ai_writer.AIWriterError as exc:
+        return jsonify(error=str(exc)), 400
+    return jsonify(suggestions=suggestions)

@@ -40,7 +40,7 @@ Point de départ : 20 octobre, soit 3 semaines. Des commerces et PME sont prêts
 - [ ] Bêta fermée : 5 à 10 commerces, crédits offerts, aide à l'import des contacts
 
 ### Semaine 2 (27 oct.–2 nov.) — l'innovation visible
-- [ ] Assistant de rédaction IA (3 propositions de SMS courts, sans caractères coûteux, avec STOP)
+- [x] Assistant de rédaction IA (3 propositions de SMS courts, sans caractères coûteux, avec STOP) — `app/services/ai_writer.py`, bouton dans « Nouvelle campagne », activé par `ANTHROPIC_API_KEY`, 20 req/h par entreprise
 - [ ] Détection de fraude / usurpation avant envoi (faux Orange Money, demandes de code, liens suspects)
 - [ ] Indicateurs d'impact pour le jury (PME actives, SMS envoyés, clients touchés)
 - [ ] Formulaire de retour dans l'application
