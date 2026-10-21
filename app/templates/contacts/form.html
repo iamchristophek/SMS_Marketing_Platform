@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card card-narrow-lg">
+    <h1>{{ title }}</h1>
+    {% if contact and contact.opted_out %}
+    <div class="alert alert-warning">Ce contact s'est désabonné (STOP){% if contact.opted_out_at %} le {{ contact.opted_out_at.strftime('%d/%m/%Y') }}{% endif %} : il ne reçoit plus aucune campagne.</div>
+    {% endif %}
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="grid grid-2">
+            <div class="form-group">{{ form.first_name.label }} {{ form.first_name(class="form-control") }}</div>
+            <div class="form-group">{{ form.last_name.label }} {{ form.last_name(class="form-control") }}</div>
+        </div>
+        <div class="form-group">
+            {{ form.phone.label }} {{ form.phone(class="form-control", placeholder="07 12 34 56 78") }}
+            <div class="help-text">Format ivoirien : 07 12 34 56 78, 0712345678 ou +2250712345678.
+                {% if contact %}Opérateur : {{ contact.operator_label }}.{% endif %}</div>
+        </div>
+        <div class="form-group">{{ form.email.label }} {{ form.email(class="form-control") }}</div>
+        <div class="form-group">
+            {{ form.groups.label }}
+            {% if form.groups.choices %}
+                <div class="checkbox-list">{{ form.groups() }}</div>
+            {% else %}
+                <div class="help-text">Aucun groupe. <a href="{{ url_for('contacts.new_group') }}">Créer un groupe</a>.</div>
+            {% endif %}
+        </div>
+        <div class="form-group checkbox">
+            {{ form.consent_given() }} {{ form.consent_given.label }}
+            {% if contact and contact.consent_given_at %}<div class="help-text">Consentement enregistré le {{ contact.consent_given_at.strftime('%d/%m/%Y') }}.</div>{% endif %}
+        </div>
+        {% if contact and contact.opted_out %}
+        <div class="form-group checkbox">{{ form.resubscribe() }} {{ form.resubscribe.label }}</div>
+        {% endif %}
+        {{ form.submit(class="btn") }}
+        <a href="{{ url_for('contacts.index') }}" class="btn btn-outline">Annuler</a>
+    </form>
+
+    {% if contact %}
+    <form method="POST" action="{{ url_for('contacts.delete', contact_id=contact.id) }}" class="mt-2"
+          onsubmit="return confirm('Supprimer définitivement ce contact ?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-sm btn-danger">Supprimer ce contact</button>
+    </form>
+    {% endif %}
+</div>
+
+{% if messages %}
+<div class="card card-narrow-lg">
+    <h2>Derniers SMS reçus</h2>
+    <table>
+        <thead><tr><th>Date</th><th>Campagne</th><th>Statut</th></tr></thead>
+        <tbody>
+        {% for m in messages|reverse %}
+            <tr>
+                <td>{{ (m.sent_at or m.queued_at).strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>{% if m.campaign %}<a href="{{ url_for('campaigns.detail', campaign_id=m.campaign_id) }}">{{ m.campaign.name }}</a>{% else %}SMS via l'API{% endif %}</td>
+                <td>{{ m.status|message_status }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

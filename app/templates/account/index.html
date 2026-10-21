@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% from "_form_errors.html" import form_errors %}
+{% block title %}Mon compte{% endblock %}
+{% block content %}
+<h1>Mon compte</h1>
+
+<div class="grid grid-2">
+    <div class="card">
+        <h2>Entreprise</h2>
+        {{ form_errors(business_form) }}
+        <form method="POST" action="{{ url_for('account.update_business') }}">
+            {{ business_form.hidden_tag() }}
+            <div class="form-group">{{ business_form.name.label }} {{ business_form.name(class="form-control") }}</div>
+            <div class="form-group">{{ business_form.sector.label }} {{ business_form.sector(class="form-control", placeholder="Commerce, restauration, santé…") }}</div>
+            <div class="form-group">{{ business_form.city.label }} {{ business_form.city(class="form-control", placeholder="Abidjan") }}</div>
+            <div class="form-group">{{ business_form.phone.label }} {{ business_form.phone(class="form-control", placeholder="07 12 34 56 78") }}</div>
+            {{ business_form.submit(class="btn") }}
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Utilisateur</h2>
+        <p><strong>Nom d'utilisateur :</strong> {{ current_user.username }}</p>
+        <p class="text-muted">Inscrit le {{ current_user.created_at.strftime('%d/%m/%Y') }}{% if current_user.last_login_at %} — dernière connexion le {{ current_user.last_login_at.strftime('%d/%m/%Y à %H:%M') }}{% endif %}.</p>
+        {{ form_errors(profile_form) }}
+        <form method="POST" action="{{ url_for('account.update_profile') }}">
+            {{ profile_form.hidden_tag() }}
+            <div class="form-group">{{ profile_form.email.label }} {{ profile_form.email(class="form-control") }}</div>
+            {{ profile_form.submit(class="btn") }}
+        </form>
+        <p class="mt-2"><a href="{{ url_for('auth.change_password') }}" class="btn btn-outline">Changer mon mot de passe</a></p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Clés API</h2>
+    <p class="text-muted">Pour envoyer des SMS depuis votre site e-commerce, votre caisse ou votre ERP.
+        Chaque clé donne accès à votre compte : ne la partagez qu'avec votre prestataire technique, et révoquez-la dès qu'elle n'est plus utile.</p>
+
+    {% if new_key %}
+    <div class="alert alert-success" role="alert">
+        <div>
+            <strong>Nouvelle clé créée — copiez-la maintenant, elle ne sera plus jamais affichée :</strong>
+            <pre class="code-sample" id="new-key">{{ new_key }}</pre>
+            <p class="small">Exemple d'envoi :</p>
+            <pre class="code-sample">curl -X POST {{ url_for('api.send_single_sms', _external=True) }} \
+  -H "X-API-Key: {{ new_key }}" -H "Content-Type: application/json" \
+  -d '{"to": "0712345678", "message": "Votre commande est prête."}'</pre>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if api_keys %}
+    <table>
+        <thead><tr><th>Nom</th><th>Début de la clé</th><th>Créée le</th><th>Dernière utilisation</th><th>État</th><th></th></tr></thead>
+        <tbody>
+        {% for key in api_keys %}
+            <tr>
+                <td>{{ key.name }}</td>
+                <td><code>{{ key.key_prefix }}…</code></td>
+                <td>{{ key.created_at.strftime('%d/%m/%Y') }}</td>
+                <td>{{ key.last_used_at.strftime('%d/%m/%Y %H:%M') if key.last_used_at else 'Jamais' }}</td>
+                <td>{% if key.revoked %}<span class="status-pill status-cancelled">Révoquée</span>{% else %}<span class="status-pill status-sent">Active</span>{% endif %}</td>
+                <td>
+                    {% if not key.revoked %}
+                    <form method="POST" action="{{ url_for('account.revoke_api_key', key_id=key.id) }}" class="inline"
+                          onsubmit="return confirm('Révoquer cette clé ? Les systèmes qui l\'utilisent ne pourront plus envoyer de SMS.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-danger">Révoquer</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {{ form_errors(api_key_form) }}
+    <form method="POST" action="{{ url_for('account.create_api_key') }}" class="inline-form mt-1">
+        {{ api_key_form.hidden_tag() }}
+        {{ api_key_form.key_name(class="form-control", placeholder=api_key_form.key_name.description, **{"aria-label": "Nom de la clé"}) }}
+        {{ api_key_form.create(class="btn btn-secondary") }}
+    </form>
+</div>
+{% endblock %}

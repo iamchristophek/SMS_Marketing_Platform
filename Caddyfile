@@ -1,0 +1,7 @@
+# Reverse proxy HTTPS devant Gunicorn (voir docker-compose.yml).
+# DOMAIN vient du fichier .env : nom de domaine (certificat Let's Encrypt
+# automatique) ou adresse IP (certificat interne, pour test).
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy web:8000
+}

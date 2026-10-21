@@ -1,0 +1,13 @@
+{# Erreurs d'un formulaire nommé autrement que `form` (pages à plusieurs
+   formulaires) ; base.html affiche déjà celles de `form`. #}
+{% macro form_errors(f) %}
+{% if f.errors %}
+<div class="alert alert-error" role="alert">
+    <ul class="form-errors">
+    {% for field_name, errors in f.errors.items() %}{% for error in errors %}
+        <li>{% if f[field_name] is defined %}{{ f[field_name].label.text }} : {% endif %}{{ error }}</li>
+    {% endfor %}{% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endmacro %}

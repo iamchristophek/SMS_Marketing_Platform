@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Conditions d'utilisation{% endblock %}
+{% block content %}
+<div class="card">
+<h1>Conditions générales d'utilisation</h1>
+<p class="text-muted">Version bêta — octobre 2026. Baoryx Connect est un service édité par Baoryx (Côte d'Ivoire).</p>
+
+<h2>1. Le service</h2>
+<p>Baoryx Connect permet aux entreprises d'envoyer des SMS à leurs propres clients : gestion des contacts, campagnes, suivi des envois. Pendant la bêta, le service est fourni en l'état et peut évoluer.</p>
+
+<h2>2. Votre compte</h2>
+<p>Vous êtes responsable de la confidentialité de votre mot de passe et de vos clés API, et de toute action réalisée depuis votre compte.</p>
+
+<h2>3. Ce que vous vous engagez à envoyer</h2>
+<ul>
+    <li>Uniquement des SMS à des personnes qui sont vos clients ou qui ont accepté de recevoir vos messages.</li>
+    <li>Une mention de désabonnement (« STOP ») dans les messages commerciaux ; les désabonnements sont appliqués automatiquement.</li>
+    <li>Aucun contenu trompeur, frauduleux, illégal, haineux, ni aucune usurpation d'identité (banque, opérateur, administration…).</li>
+</ul>
+<p>Les messages ressemblant à une arnaque sont bloqués avant l'envoi. En cas d'abus, Baoryx peut suspendre le compte sans préavis ; les crédits liés à un usage frauduleux ne sont pas remboursés.</p>
+
+<h2>4. Crédits et paiements</h2>
+<p>Un crédit correspond à un SMS de 160 caractères (70 avec caractères spéciaux). Les crédits sont débités à la confirmation d'une campagne ; ceux des SMS non envoyés sont rendus automatiquement. Les crédits achetés ne sont pas remboursables en argent.</p>
+
+<h2>5. Responsabilité</h2>
+<p>La livraison des SMS dépend des opérateurs (Orange, MTN, Moov). Baoryx ne peut garantir la livraison de chaque message ni être tenu responsable du contenu envoyé par ses clients.</p>
+
+<h2>6. Données</h2>
+<p>Le traitement des données est décrit dans notre <a href="{{ url_for('dashboard.privacy') }}">politique de confidentialité</a>.</p>
+
+<h2>7. Droit applicable</h2>
+<p>Ces conditions sont régies par le droit ivoirien. Contact : via « Donner mon avis » dans l'application.</p>
+</div>
+{% endblock %}

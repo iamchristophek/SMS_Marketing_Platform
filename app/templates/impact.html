@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Impact{% endblock %}
+{% block content %}
+<h1>L'impact de Baoryx Connect</h1>
+<p class="text-muted">Chiffres agrégés de la plateforme, mis à jour en temps réel. Aucune donnée personnelle n'est affichée.</p>
+<div class="grid grid-3">
+    <div class="card stat"><div class="value">{{ stats.businesses|number }}</div><div class="label">Commerces et PME inscrits</div></div>
+    <div class="card stat"><div class="value">{{ stats.active_businesses|number }}</div><div class="label">Actifs ces {{ stats.active_days }} derniers jours</div></div>
+    <div class="card stat"><div class="value">{{ stats.campaigns|number }}</div><div class="label">Campagnes envoyées</div></div>
+    <div class="card stat"><div class="value">{{ stats.sms_sent|number }}</div><div class="label">SMS envoyés</div></div>
+    <div class="card stat"><div class="value">{{ stats.people_reached|number }}</div><div class="label">Clients touchés</div></div>
+    <div class="card stat"><div class="value">{{ stats.opt_outs_honored|number }}</div><div class="label">Désabonnements STOP respectés</div></div>
+    {% if stats.avg_rating %}
+    <div class="card stat"><div class="value">{{ stats.avg_rating }}/5</div><div class="label">Satisfaction ({{ stats.feedback_count }} avis)</div></div>
+    {% endif %}
+</div>
+{% endblock %}

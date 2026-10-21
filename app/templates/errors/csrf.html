@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Session expirée{% endblock %}
+{% block content %}
+<div class="card card-center">
+    <h1>Formulaire refusé</h1>
+    {% if insecure_transport %}
+    <p>Votre navigateur n'a pas renvoyé le cookie de session : ce serveur exige une connexion
+       <strong>HTTPS</strong>, et la page a été ouverte en HTTP.</p>
+    <p class="text-muted">Ouvrez le site avec une adresse <code>https://</code>. Pour un test local
+       sans certificat uniquement, l'administrateur peut définir <code>SESSION_COOKIE_SECURE=false</code>.</p>
+    {% else %}
+    <p>Votre session a expiré ou le formulaire a été ouvert dans un autre onglet.
+       Rechargez la page et soumettez à nouveau le formulaire.</p>
+    <p class="text-muted">Si le problème persiste, vérifiez que votre navigateur accepte les cookies pour ce site.</p>
+    {% endif %}
+    <a href="{{ request.path }}" class="btn">Recharger la page</a>
+</div>
+{% endblock %}
