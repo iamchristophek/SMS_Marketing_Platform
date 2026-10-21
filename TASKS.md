@@ -30,7 +30,7 @@ Légende des priorités :
 Point de départ : 20 octobre, soit 3 semaines. Des commerces et PME sont prêts à tester.
 
 ### Semaine 1 (20–26 oct.) — mise en ligne et bêta
-- [ ] Fusionner la PR #1 dans `main`
+- [x] Fusionner la PR #1 dans `main` (21/10)
 - [ ] Serveur + nom de domaine, déploiement `docker compose` (HTTPS)
 - [ ] Compte agrégateur SMS (Africa's Talking) et demande de sender ID `BAORYX`
 - [ ] Numéro Mobile Money pour les paiements manuels (`MANUAL_PAYMENT_INSTRUCTIONS`)
